@@ -50,6 +50,11 @@ def get_ship_direction() -> str:
 
 def get_ship_type(ships: dict[str, list[str]]) -> str:
     """Ask user which ship type to place on board."""
+    ship_type: str = ""
+    while ship_type not in ships.keys():
+        print(f"{ships}")
+        ship_type = input("Select a type of ship")
+    return ship_type
 
 
 def validate_coords(valid_coordinates: list[str]) -> bool:
