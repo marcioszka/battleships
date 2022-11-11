@@ -1,9 +1,9 @@
 """A game of battleships."""
 
-from math import inf
 from os import system
 from platform import system as operating_system
-INFINITY = int(inf)
+from string import ascii_uppercase
+
 SHIPS: dict[str, list[str]] = {
     "carrier": ["X", "X", "X", "X", "X"],
     "battleship": ["X", "X", "X", "X"],
@@ -12,10 +12,7 @@ SHIPS: dict[str, list[str]] = {
     "patrol boat": ["X", "X"],
     "speedboat": ["X"]
 }
-COORDS_TRANSLATION: dict[str, str] = {
-    "A": "0", "B": "1", "C": "2", "D": "3", "E": "4",
-    "F": "5", "G": "6", "H": "7", "I": "8", "J": "9"
-}
+COORDS_TRANSLATION: dict[str, int] = dict(zip(ascii_uppercase[:10], range(10)))
 VALID_COORDINATES: list[str] = ["A1", "A2", "A3", "A4", "A5",
                                 "B1", "B2", "B3", "B4", "B5",
                                 "C1", "C2", "C3", "C4", "C5",
@@ -54,8 +51,10 @@ def get_ship_type(ships: dict[str, list[str]]) -> str:
     """Ask user which ship type to place on board."""
     ship_type: str = ""
     while ship_type not in ships.keys():
-        print(f"{ships}")
-        ship_type = input("Select a type of ship")
+        print("Ship types:")
+        for name in ships:
+            print("   " + name)
+        ship_type = input("\nSelect a type of ship\n")
     return ship_type
 
 
@@ -68,11 +67,11 @@ def normalize_coords(user_coords: str) -> str:
 
 
 def translate_coords(user_coords: str,
-                     coords_dictionary: dict[str, str]
+                     coords_dictionary: dict[str, int]
                      ) -> tuple[int, int]:
     """Convert user input into a format used in the game."""
     converted: list[int] = [
-        int(coords_dictionary[user_coords[0]]), int(user_coords[1]) - 1]
+        int(coords_dictionary[user_coords[0]]), int(user_coords[1::]) - 1]
     return converted[0], converted[1]
 
 
@@ -88,6 +87,7 @@ def check_ship_proximity(game_board: list[str],
                          user_coords: tuple[int, int],
                          ship_type: list[str],
                          ship_direction: str) -> bool:
+    """Check if attempt to place a ship has enough space."""
     pass
 
 
@@ -140,7 +140,9 @@ def whose_turn_is_it(turn_counter: int) -> str:
     return "Player 2" if turn_counter % 2 == 0 else "Player 1"
 
 
-def check_for_hit(game_board: list[str], user_coords: tuple[int, int]) -> list[str]:
+def check_for_hit(game_board: list[str],
+                  user_coords: tuple[int, int]
+                  ) -> list[str]:
     pass  # rename later
 
 
@@ -153,5 +155,6 @@ def get_winner(game_board: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    get_ship_type(SHIPS)
-    translate_coords("C3", COORDS_TRANSLATION)
+    # get_ship_type(SHIPS)
+    print(COORDS_TRANSLATION)
+    print(translate_coords("J2138", COORDS_TRANSLATION))
