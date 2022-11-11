@@ -1,26 +1,36 @@
+""""""
+
 from os import system
 from platform import system as operating_system
-ships = {
-    "battleship": ["X", "X", "X", "X", "X"],
-    "miner": ["X", "X", "X", "X"],
-    "ubot": ["X", "X", "X"]
+SHIPS: dict[str, list[str]] = {
+    "carrier": ["X", "X", "X", "X", "X"],
+    "battleship": ["X", "X", "X", "X"],
+    "destroyer": ["X", "X", "X"],
+    "submarine": ["X", "X", "X"],
+    "patrol boat": ["X", "X"],
+    "speedboat": ["X"]
 }
-coords_translation = {
+COORDS_TRANSLATION: dict[str, int] = {
     "A": 0, "B": 1, "C": 2, "D": 3, "E": 4,
     "1": 0, "2": 1, "3": 2, "4": 3, "5": 4
 }
-valid_coordinates = ["A1", "A2", "A3", "A4", "A5",
-                     "B1", "B2", "B3", "B4", "B5",
-                     "C1", "C2", "C3", "C4", "C5",
-                     "D1", "D2", "D3", "D4", "D5",
-                     "E1", "E2", "E3", "E4", "E5"
-                     ]
-type_of_field = {
+VALID_COORDINATES: list[str] = ["A1", "A2", "A3", "A4", "A5",
+                                "B1", "B2", "B3", "B4", "B5",
+                                "C1", "C2", "C3", "C4", "C5",
+                                "D1", "D2", "D3", "D4", "D5",
+                                "E1", "E2", "E3", "E4", "E5"
+                                ]
+TYPE_OF_FIELD: dict[str, str] = {
     "empty": "O",
     "ship": "X",
     "missed": "M",
     "hit": "H",
     "sunk": "S"
+}
+
+GAME_MODES: dict[int, str] = {
+    1: "Multiplayer",
+    2: "Singleplayer against AI"
 }
 
 # game_board = [["0", "0", "0", "0", "0"],
@@ -39,7 +49,7 @@ def get_ship_direction() -> str:
 
 
 def get_ship_type(ships: dict[str, list[str]]) -> str:
-    pass
+    """Ask user which ship type to place on board."""
 
 
 def validate_coords(valid_coordinates: list[str]) -> bool:
