@@ -1,7 +1,9 @@
-""""""
+"""A game of battleships."""
 
+from math import inf
 from os import system
 from platform import system as operating_system
+INFINITY = int(inf)
 SHIPS: dict[str, list[str]] = {
     "carrier": ["X", "X", "X", "X", "X"],
     "battleship": ["X", "X", "X", "X"],
@@ -10,9 +12,9 @@ SHIPS: dict[str, list[str]] = {
     "patrol boat": ["X", "X"],
     "speedboat": ["X"]
 }
-COORDS_TRANSLATION: dict[str, int] = {
-    "A": 0, "B": 1, "C": 2, "D": 3, "E": 4,
-    "1": 0, "2": 1, "3": 2, "4": 3, "5": 4
+COORDS_TRANSLATION: dict[str, str] = {
+    "A": "0", "B": "1", "C": "2", "D": "3", "E": "4",
+    "F": "5", "G": "6", "H": "7", "I": "8", "J": "9"
 }
 VALID_COORDINATES: list[str] = ["A1", "A2", "A3", "A4", "A5",
                                 "B1", "B2", "B3", "B4", "B5",
@@ -65,8 +67,13 @@ def normalize_coords(user_coords: str) -> str:
     pass
 
 
-def translate_coords(user_coords: str) -> tuple[int, int]:
-    pass
+def translate_coords(user_coords: str,
+                     coords_dictionary: dict[str, str]
+                     ) -> tuple[int, int]:
+    """Convert user input into a format used in the game."""
+    converted: list[int] = [
+        int(coords_dictionary[user_coords[0]]), int(user_coords[1]) - 1]
+    return converted[0], converted[1]
 
 
 def get_empty_board(board_size: int) -> list[str]:
@@ -143,3 +150,8 @@ def attempt_feedback(hit_miss_sunk: str) -> None:
 
 def get_winner(game_board: list[str]) -> None:
     pass
+
+
+if __name__ == "__main__":
+    get_ship_type(SHIPS)
+    translate_coords("C3", COORDS_TRANSLATION)
