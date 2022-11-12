@@ -3,34 +3,34 @@
 from os import system
 from platform import system as operating_system
 from string import ascii_uppercase
+from time import sleep
 
-SHIP_TYPES: dict[str, list[str]] = {
-    "carrier": ["X", "X", "X", "X", "X"],
-    "battleship": ["X", "X", "X", "X"],
-    "destroyer": ["X", "X", "X"],
-    "submarine": ["X", "X", "X"],
-    "patrol boat": ["X", "X"],
-    "speedboat": ["X"]
-}
-COORDS_TRANSLATION: dict[str, int] = dict(zip(ascii_uppercase[:10], range(10)))
-VALID_COORDINATES: list[str] = ["A1", "A2", "A3", "A4", "A5",
-                                "B1", "B2", "B3", "B4", "B5",
-                                "C1", "C2", "C3", "C4", "C5",
-                                "D1", "D2", "D3", "D4", "D5",
-                                "E1", "E2", "E3", "E4", "E5"
-                                ]
-TYPE_OF_FIELD: dict[str, str] = {
-    "empty": "O",
-    "ship": "X",
-    "missed": "M",
-    "hit": "H",
-    "sunk": "S"
-}
 
-GAME_MODES: dict[int, str] = {
-    1: "Multiplayer",
-    2: "Singleplayer against PC"
-}
+class Constants:
+    """Globally accessed constants."""
+
+    SHIP_TYPES: dict[str, list[str]] = {
+        "carrier": ["X", "X", "X", "X", "X"],
+        "battleship": ["X", "X", "X", "X"],
+        "destroyer": ["X", "X", "X"],
+        "submarine": ["X", "X", "X"],
+        "patrol boat": ["X", "X"],
+        "speedboat": ["X"]
+    }
+    COORDS_TRANSLATION: dict[str, int] = dict(
+        zip(ascii_uppercase[:5], range(5)))
+    VALID_COORDINATES: list[str] = []
+    TYPE_OF_FIELD: dict[str, str] = {
+        "empty": "O",
+        "ship": "X",
+        "missed": "M",
+        "hit": "H",
+        "sunk": "S"
+    }
+    GAME_MODES: dict[int, str] = {
+        1: "Multiplayer",
+        2: "Singleplayer against PC"
+    }
 
 # game_board = [["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "0"],
@@ -39,21 +39,48 @@ GAME_MODES: dict[int, str] = {
 #               ["0", "0", "0", "0", "0"]]
 
 
+def generate_board_size(selected_size: int) -> None:
+    """Populate game constants with required values."""
+    Constants.COORDS_TRANSLATION = dict(
+        zip(ascii_uppercase[:selected_size], range(selected_size)))
+    Constants.VALID_COORDINATES = [row+str(column) for column in
+                                   range(selected_size)
+                                   for row in Constants.COORDS_TRANSLATION]
+
+
 def get_game_mode() -> int:
     """Ask user to select a game mode."""
     selected_mode = 0
     print("Available modes:")
-    while selected_mode not in GAME_MODES:
-        for key, value in GAME_MODES.items():
+    while selected_mode not in Constants.GAME_MODES:
+        for key, value in Constants.GAME_MODES.items():
             print(f"   {key}: {value}")
         try:
             selected_mode = int(input("\nSelect game mode.\n"))
-            if selected_mode < 1 or selected_mode > len(GAME_MODES):
+            if selected_mode < 1 or selected_mode > len(Constants.GAME_MODES):
                 raise ValueError
         except ValueError:
             print("\nPlease enter a valid number.\n")
-    print(f"Selected '{GAME_MODES[selected_mode]}' mode.")
+    print(f"Selected '{Constants.GAME_MODES[selected_mode]}' mode.")
     return selected_mode
+
+
+def get_board_size() -> int:
+    """Ask user to select a board size."""
+    selected_size = 0
+    while selected_size not in range(5, 11):
+        try:
+            selected_size = int(
+                input("\nSelect board size between 5 and 10.\n"))
+            if selected_size < 5 or selected_size > 10:
+                raise ValueError
+        except ValueError:
+            print("\nPlease enter a valid number.\n")
+    print("Generating board...")
+    generate_board_size(selected_size)
+    sleep(1)
+    print(f"Board with size {selected_size} generated.")
+    return selected_size
 
 
 def get_user_coords() -> str:
@@ -67,20 +94,20 @@ def get_ship_direction() -> str:
 def get_ship_type() -> str:
     """Ask user which ship type to place on board."""
     ship_type: str = ""
-    while ship_type not in SHIP_TYPES:
+    while ship_type not in Constants.SHIP_TYPES:
         print("Ship types:")
-        for name in SHIP_TYPES:
+        for name in Constants.SHIP_TYPES:
             print("   " + name)
         try:
             ship_type = input("\nSelect a type of ship\n")
-            if ship_type not in SHIP_TYPES:
+            if ship_type not in Constants.SHIP_TYPES:
                 raise ValueError
         except ValueError:
             print("\nUnknown ship type.\n")
     return ship_type
 
 
-def validate_coords(valid_coordinates: list[str]) -> bool:
+def validate_coords() -> bool:
     pass
 
 
@@ -91,7 +118,8 @@ def normalize_coords(user_coords: str) -> str:
 def translate_coords(user_coords: str) -> tuple[int, int]:
     """Convert user input into a format used in the game."""
     converted: list[int] = [
-        int(COORDS_TRANSLATION[user_coords[0]]), int(user_coords[1::]) - 1]
+        int(Constants.COORDS_TRANSLATION[user_coords[0]]),
+        int(user_coords[1::]) - 1]
     return converted[0], converted[1]
 
 
@@ -175,8 +203,13 @@ def get_winner(game_board: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    get_ship_type()
+    # get_ship_type()
     # print(COORDS_TRANSLATION)
     # print(translate_coords("J2138"))
     # get_game_mode()
+    # print(Constants.COORDS_TRANSLATION)
+    # print(Constants.VALID_COORDINATES)
+    # get_board_size()
+    # print(Constants.VALID_COORDINATES)
+    # print(Constants.COORDS_TRANSLATION)
     pass
