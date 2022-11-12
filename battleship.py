@@ -29,8 +29,13 @@ class Constants:  # pylint: disable=[too-few-public-methods]
     }
     GAME_MODES: dict[int, str] = {
         1: "Multiplayer",
-        2: "Singleplayer against PC"
+        2: "Multiplayer with turn limit",
+        3: "Singleplayer against easy PC",
+        4: "Singleplayer against easy PC with turn limit",
+        5: "Singleplayer against normal PC",
+        6: "Singleplayer against normal PC with turn limit"
     }
+    TEXT_INDENT: int = 4
 
 # game_board = [["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "0"],
@@ -54,7 +59,7 @@ def get_game_mode() -> int:
     print("Available modes:")
     while selected_mode not in Constants.GAME_MODES:
         for key, value in Constants.GAME_MODES.items():
-            print(f"   {key}: {value}")
+            print(f"{'':<Constants.TEXT_INDENT}{key}: {value}")
         try:
             selected_mode = int(input("\nSelect game mode.\n"))
             if selected_mode < 1 or selected_mode > len(Constants.GAME_MODES):
@@ -63,6 +68,11 @@ def get_game_mode() -> int:
             print("\nPlease enter a valid number.\n")
     print(f"Selected '{Constants.GAME_MODES[selected_mode]}' mode.")
     return selected_mode
+
+
+def get_turn_limit() -> int:
+    """Ask user to specify game length."""
+    return 69  # Nice
 
 
 def get_board_size() -> int:
@@ -85,22 +95,20 @@ def get_board_size() -> int:
 
 def confirm_placement():
     """Ask user for confirmation of ship placement."""
-    pass
 
 
 def remove_ship():
     """Remove placed ship from player board."""
-    pass
 
 
 def get_user_coords() -> str:
     """Ask user for coordinates."""
-    pass
+    return ""
 
 
 def get_ship_direction() -> str:
     """Ask user for ship placement plane."""
-    pass
+    return ""
 
 
 def get_ship_type() -> str:
@@ -109,7 +117,7 @@ def get_ship_type() -> str:
     while ship_type not in Constants.SHIP_TYPES:
         print("Ship types:")
         for name in Constants.SHIP_TYPES:
-            print("   " + name)
+            print(f"{'':<Constants.TEXT_INDENT} {name}")
         try:
             ship_type = input("\nSelect a type of ship\n")
             if ship_type not in Constants.SHIP_TYPES:
@@ -120,13 +128,13 @@ def get_ship_type() -> str:
 
 
 def validate_coords() -> bool:
-    """Check if input coordinates are withing board bounds."""
-    pass
+    """Check if input coordinates are within board bounds."""
+    return False
 
 
 def normalize_coords(raw_coords: str) -> str:
     """Convert user input into a format used in coordinates translation."""
-    pass
+    return raw_coords
 
 
 def translate_coords(raw_coords: str) -> tuple[int, int]:
@@ -150,9 +158,20 @@ def get_empty_board(board_size: int) -> list[list[str]]:
     return [["O"]*board_size]*board_size
 
 
-def display_board(player_board: list[list[str]]) -> str:
+def display_board(player_board: list[list[str]]) -> None:
+    """Display board to the user."""
+    player_board = player_board.copy()
+
+
+def display_turns_left(turn_counter: int) -> None:
+    """Display how many turns are left."""
+    print(turn_counter)
+
+
+def convert_board(board: list[list[str]]) -> str:
     """Convert iterable board into multi line string."""
-    pass
+    board = board.copy()
+    return ""
 
 
 def check_ship_proximity(player_board: list[list[str]],
@@ -160,13 +179,16 @@ def check_ship_proximity(player_board: list[list[str]],
                          ship_type: list[str],
                          ship_direction: str) -> bool:
     """Check if ship placement attempt has enough space."""
-    pass
+    player_board = player_board.copy()
+    print(converted_coords)
+    ship_type = ship_type.copy()
+    print(ship_direction)
+    return False
 
 
 def waiting_screen(wait_message: str) -> None:
     """Display message during placement phase when switching players."""
-    pass
-
+    print(wait_message)
 # input1 = input("Press any key")
 # if input1:
 #     game_continue()
@@ -182,9 +204,13 @@ def clear_terminal() -> None:
         system("clear")  # on Unix systems
 
 
-def boards_side_by_side() -> str:
+def boards_side_by_side(player1_visible_board: list[list[str]],
+                        player2_visible_board: list[list[str]],
+                        ) -> str:
     """Display both players visible board versions side by side."""
-    pass
+    player1_visible_board = player1_visible_board.copy()
+    player2_visible_board = player2_visible_board.copy()
+    return ""
 # DICE = [
 #     ("-----",
 #      "|   |",
@@ -216,7 +242,6 @@ def whose_turn_is_it(turn_counter: int) -> str:
 
 def check_if_sunk():
     """Confirm that a ship has been sunk."""
-    pass
 
 
 def place_move_on_board(defender_visible_board: list[list[str]],
@@ -245,18 +270,48 @@ def place_move_on_board(defender_visible_board: list[list[str]],
 
 def move_attempt_feedback(hit_miss_sunk: str) -> None:
     """User feedback based on his move attempt."""
-    pass
+    print(hit_miss_sunk)
 
 
 def check_for_winner(player_board: list[list[str]]) -> tuple[bool, int]:
     """Check if a player won after his last move."""
-    pass
+    player_board = player_board.copy()
+    return False, 69  # Nice
 
 
 def get_winner(player_board: list[list[str]],
                turn: int) -> None:
     """Display a message which player won."""
-    pass
+    player_board = player_board.copy()
+    print(turn)
+
+
+def bot_ship_placement():
+    """Placement phase for bot in singleplayer."""
+
+
+def easy_bot_move():
+    """Random choice for bot from game board."""
+
+
+def normal_bot_move():
+    """Bot attempt to sink a ship."""
+
+
+def settings_phase():
+    """Combine functions for mode selection."""
+
+
+def placement_phase():
+    """Combine functions for placement phase."""
+
+
+def shooting_phase():
+    """Combine functions for shooting phase."""
+
+
+def main() -> None:
+    """Combine actual game logic."""
 
 
 if __name__ == "__main__":
@@ -273,4 +328,3 @@ if __name__ == "__main__":
     # print(Constants.VALID_COORDINATES)
     # print(Constants.COORDS_TRANSLATION)
     print(get_empty_board(10))
-    pass
