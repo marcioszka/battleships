@@ -4,7 +4,7 @@ from os import system
 from platform import system as operating_system
 from string import ascii_uppercase
 
-SHIPS: dict[str, list[str]] = {
+SHIP_TYPES: dict[str, list[str]] = {
     "carrier": ["X", "X", "X", "X", "X"],
     "battleship": ["X", "X", "X", "X"],
     "destroyer": ["X", "X", "X"],
@@ -29,7 +29,7 @@ TYPE_OF_FIELD: dict[str, str] = {
 
 GAME_MODES: dict[int, str] = {
     1: "Multiplayer",
-    2: "Singleplayer against AI"
+    2: "Singleplayer against PC"
 }
 
 # game_board = [["0", "0", "0", "0", "0"],
@@ -37,6 +37,23 @@ GAME_MODES: dict[int, str] = {
 #               ["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "0"]]
+
+
+def get_game_mode() -> int:
+    """Ask user to select a game mode."""
+    selected_mode = 0
+    print("Available modes:")
+    while selected_mode not in GAME_MODES:
+        for key, value in GAME_MODES.items():
+            print(f"   {key}: {value}")
+        try:
+            selected_mode = int(input("\nSelect game mode.\n"))
+            if selected_mode < 1 or selected_mode > len(GAME_MODES):
+                raise ValueError
+        except ValueError:
+            print("\nPlease enter a valid number.\n")
+    print(f"Selected '{GAME_MODES[selected_mode]}' mode.")
+    return selected_mode
 
 
 def get_user_coords() -> str:
@@ -47,14 +64,19 @@ def get_ship_direction() -> str:
     pass
 
 
-def get_ship_type(ships: dict[str, list[str]]) -> str:
+def get_ship_type() -> str:
     """Ask user which ship type to place on board."""
     ship_type: str = ""
-    while ship_type not in ships.keys():
+    while ship_type not in SHIP_TYPES:
         print("Ship types:")
-        for name in ships:
+        for name in SHIP_TYPES:
             print("   " + name)
-        ship_type = input("\nSelect a type of ship\n")
+        try:
+            ship_type = input("\nSelect a type of ship\n")
+            if ship_type not in SHIP_TYPES:
+                raise ValueError
+        except ValueError:
+            print("\nUnknown ship type.\n")
     return ship_type
 
 
@@ -66,12 +88,10 @@ def normalize_coords(user_coords: str) -> str:
     pass
 
 
-def translate_coords(user_coords: str,
-                     coords_dictionary: dict[str, int]
-                     ) -> tuple[int, int]:
+def translate_coords(user_coords: str) -> tuple[int, int]:
     """Convert user input into a format used in the game."""
     converted: list[int] = [
-        int(coords_dictionary[user_coords[0]]), int(user_coords[1::]) - 1]
+        int(COORDS_TRANSLATION[user_coords[0]]), int(user_coords[1::]) - 1]
     return converted[0], converted[1]
 
 
@@ -155,6 +175,8 @@ def get_winner(game_board: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    # get_ship_type(SHIPS)
-    print(COORDS_TRANSLATION)
-    print(translate_coords("J2138", COORDS_TRANSLATION))
+    get_ship_type()
+    # print(COORDS_TRANSLATION)
+    # print(translate_coords("J2138"))
+    # get_game_mode()
+    pass
