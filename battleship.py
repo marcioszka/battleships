@@ -1,5 +1,7 @@
 from os import system
 from platform import system as operating_system
+
+
 ships = {
     "battleship": ["X", "X", "X", "X", "X"],
     "miner": ["X", "X", "X", "X"],
@@ -34,8 +36,29 @@ def get_user_coords() -> str:
     pass
 
 
-def get_ship_direction() -> str:
-    pass
+def get_ship_direction():
+
+    ship_directions_dict = {
+        1: "Up",
+        2: "Down",
+        3: "Left",
+        4: "Right"}
+
+    while True:
+        ship_direction = int(input(
+            """choose ship's direction:
+    1.Up
+    2.Down
+    3.Left
+    4.Right
+    Enter number of Your choice:"""))
+        if ship_direction not in ship_directions_dict:
+            print("\nwrong number, please try again\n")
+            continue
+        return (ship_directions_dict[ship_direction])
+
+
+get_ship_direction()
 
 
 def get_ship_type(ships: dict[str, list[str]]) -> str:
@@ -69,12 +92,26 @@ def check_ship_proximity(game_board: list[str],
     pass
 
 
-def waiting_screen(wait_message: str) -> None:
-    pass
+def waiting_screen():
+    print("""\n
+    \n
+    \n
+    \n
+ _       __        _  __     ____               __  __                       __                    
+| |     / /____ _ (_)/ /_   / __/____   _____   \ \/ /____   __  __ _____   / /_ __  __ _____ ______ 
+| | /| / // __ `// // __/  / /_ / __ \ / ___/    \  // __ \ / / / // ___/  / __// / / // ___// __  /
+| |/ |/ // /_/ // // /_   / __// /_/ // /        / // /_/ // /_/ // /     / /_ / /_/ // /   / / / /
+|__/|__/ \__,_//_/ \__/  /_/   \____//_/        /_/ \____/ \__,_//_/      \__/ \__,_//_/   /_/ /_/ 
+                                                                                                    \n
+                                                                                                    \n
+                                                                                                    """)
 
-# input1 = input("Press any key")
-# if input1:
-#     game_continue()
+    input1 = input("Press any key to continue:")
+
+    # if input1:
+    #     game_continue()
+    # pass
+waiting_screen()
 
 
 def clear_terminal() -> None:
