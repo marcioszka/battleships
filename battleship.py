@@ -103,8 +103,8 @@ def remove_ship():
 
 
 def get_user_coords() -> str:
-    """Ask user for coordinates."""
-    return ""
+    user_coords = input("Enter ship coordinates: \n")
+    return user_coords
 
 
 def get_ship_direction():
@@ -115,18 +115,43 @@ def get_ship_direction():
         3: "Left",
         4: "Right"}
 
-    while True:
-        ship_direction = int(input(
-            """choose ship's direction:
-    1.Up
-    2.Down
-    3.Left
-    4.Right
-    Enter number of Your choice:"""))
-        if ship_direction not in ship_directions_dict:
-            print("\nwrong number, please try again\n")
-            continue
-        return (ship_directions_dict[ship_direction])
+	while True:
+		ship_direction = int(input(
+			"""choose ship's direction:
+			1.Up
+			2.Down
+			3.Left
+			4.Right
+			Enter number of Your choice:"""))
+		if ship_direction not in ship_directions_dict:
+				print("\nwrong number, please try again\n")
+				continue
+			return (ship_directions_dict[ship_direction])
+
+def get_ship_type() -> str:
+    """Ask user which ship type to place on board."""
+    ship_type: str = ""
+    while ship_type not in Constants.SHIP_TYPES:
+        print("Ship types:")
+        for name in Constants.SHIP_TYPES:
+            print(f"{'':<Constants.TEXT_INDENT} {name}")
+        try:
+            ship_type = input("\nSelect a type of ship\n")
+            if ship_type not in Constants.SHIP_TYPES:
+                raise ValueError
+        except ValueError:
+            print("\nUnknown ship type.\n")
+    return ship_type
+
+
+def validate_coords() -> bool:
+    """Check if input coordinates are within board bounds."""
+    return False
+
+
+def normalize_coords(raw_coords: str) -> str:
+    """Convert user input into a format used in coordinates translation."""
+    return raw_coords
 
 
 def translate_coords(raw_coords: str) -> tuple[int, int]:
@@ -160,10 +185,15 @@ def display_turns_left(turn_counter: int) -> None:
     print(turn_counter)
 
 
-def convert_board(board: list[list[str]]) -> str:
-    """Convert iterable board into multi line string."""
-    board = board.copy()
-    return ""
+def display_board(game_board: list[str]) -> None:  # ja
+    board_size = len(game_board)
+    row = 0
+    column = 0
+    print(f'{"": <0}\t{"A": <0}\t{"B": <0}\t{"C": <0}\t{"D": <0}\t{"E": <0}')
+    while row < board_size:
+        print(
+            f'{row+1: <0}\t{game_board[row][column]: <0}\t{game_board[row][column+1]: <0}\t{game_board[row][column+2]: <0}\t{game_board[row][column+3]: <0}\t{game_board[row][column+4]: <0}')
+        row += 1
 
 
 def check_ship_proximity(player_board: list[list[str]],
@@ -276,7 +306,12 @@ def place_move_on_board(defender_visible_board: list[list[str]],
 
 def move_attempt_feedback(hit_miss_sunk: str) -> None:
     """User feedback based on his move attempt."""
-    print(hit_miss_sunk)
+    if hit_missed_sunk == "X":
+        print("You've hit a ship!")
+    elif hit_missed_sunk == "M":
+        print("You've missed!")
+    elif hit_missed_sunk == "S":
+        print("You've sunk a ship!")
 
 
 def check_for_winner(player_board: list[list[str]]) -> tuple[bool, int]:
@@ -321,21 +356,12 @@ def shooting_phase():
     """Combine functions for shooting phase."""
 
 
-def main() -> None:
-    """Combine actual game logic."""
+def get_winner(game_board: list[str]) -> None:
+    pass
 
 
-if __name__ == "__main__":
-    # Testing and execution purpose
-
-    # main()
-    # get_ship_type()
-    # print(COORDS_TRANSLATION)
-    # print(translate_coords("J2138"))
-    # get_game_mode()
-    # print(Constants.COORDS_TRANSLATION)
-    # print(Constants.VALID_COORDINATES)
-    # get_board_size()
-    # print(Constants.VALID_COORDINATES)
-    # print(Constants.COORDS_TRANSLATION)
-    print(get_empty_board(10))
+def display_message() -> None:
+    if validate_coords() == False:
+        print("Invalid input!")
+    if check_ship_proximity() == False:
+        print("Ships are too close!")
