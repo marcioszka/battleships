@@ -1,5 +1,6 @@
 from os import system
 from platform import system as operating_system
+
 ships = {
     "battleship": ["X", "X", "X", "X", "X"],
     "miner": ["X", "X", "X", "X"],
@@ -62,7 +63,13 @@ def get_empty_board(board_size: int) -> list[str]:
 
 
 def display_board(game_board: list[str]) -> None: #ja
-    pass
+    board_size = len(game_board)
+    row = 0
+    column = 0
+    print(f'{"": <0}\t{"A": <0}\t{"B": <0}\t{"C": <0}\t{"D": <0}\t{"E": <0}')
+    while row < board_size:
+        print(f'{row+1: <0}\t{game_board[row][column]: <0}\t{game_board[row][column+1]: <0}\t{game_board[row][column+2]: <0}\t{game_board[row][column+3]: <0}\t{game_board[row][column+4]: <0}')
+        row += 1
 
 
 def check_ship_proximity(game_board: list[str],
@@ -90,7 +97,8 @@ def clear_terminal() -> None:
         system("clear")  # on Unix systems
 
 
-def boards_side_by_side() -> str: #ja
+def boards_side_by_side(player_1_displayed_board: list[list[str]], player_2_displayed_board: list[list[str]], board_size: int) -> None: #ja
+    
     pass
 # DICE = [
 #     ("-----",
@@ -125,8 +133,14 @@ def check_for_hit(game_board: list[str], user_coords: tuple[int, int]) -> list[s
     pass  # rename later
 
 
-def attempt_feedback(hit_miss_sunk: str) -> None: #ja
-    pass
+def attempt_feedback(hit_missed_sunk: str) -> None:
+    
+    if hit_missed_sunk == "X":
+        print("You've hit a ship!")
+    elif hit_missed_sunk == "M":
+        print("You've missed!")
+    elif hit_missed_sunk == "S":
+        print("You've sunk a ship!")
 
 
 def get_winner(game_board: list[str]) -> None: #ja
@@ -135,3 +149,5 @@ def get_winner(game_board: list[str]) -> None: #ja
 def display_message() -> None:
     if validate_coords() == False:
         print("Invalid input!")
+    if check_ship_proximity() == False:
+        print("Ships are too close!")
