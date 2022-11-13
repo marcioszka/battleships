@@ -31,8 +31,8 @@ type_of_field = {
 
 
 def get_user_coords() -> str:
-    pass
-
+    user_coords = input("Wprowadź współrzędne statku: / Enter ship coordinates: \n")
+    return user_coords
 
 def get_ship_direction() -> str:
     pass
@@ -42,8 +42,11 @@ def get_ship_type(ships: dict[str, list[str]]) -> str:
     pass
 
 
-def validate_coords(valid_coordinates: list[str]) -> bool:
-    pass
+def validate_coords(valid_coordinates: list[str], user_coords: str) -> bool: 
+    if user_coords in valid_coordinates:
+        return True
+    else:
+        return False
 
 
 def normalize_coords(user_coords: str) -> str:
@@ -58,7 +61,7 @@ def get_empty_board(board_size: int) -> list[str]:
     pass
 
 
-def display_board(game_board: list[str]) -> None:
+def display_board(game_board: list[str]) -> None: #ja
     pass
 
 
@@ -87,7 +90,7 @@ def clear_terminal() -> None:
         system("clear")  # on Unix systems
 
 
-def boards_side_by_side() -> str:
+def boards_side_by_side() -> str: #ja
     pass
 # DICE = [
 #     ("-----",
@@ -122,9 +125,9 @@ def check_for_hit(game_board: list[str], user_coords: tuple[int, int]) -> list[s
     pass  # rename later
 
 
-def attempt_feedback(hit_miss_sunk: str) -> None:
+def attempt_feedback(hit_miss_sunk: str) -> None: #ja
     pass
 
 
-def get_winner(game_board: list[str]) -> None:
+def get_winner(game_board: list[str]) -> None: #ja
     pass
