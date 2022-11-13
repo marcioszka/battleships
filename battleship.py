@@ -2,6 +2,7 @@
 
 from os import system
 from platform import system as operating_system
+from random import randint
 from string import ascii_uppercase
 from time import sleep
 
@@ -290,8 +291,13 @@ def bot_ship_placement():
     """Placement phase for bot in singleplayer."""
 
 
-def easy_bot_move():
+def easy_bot_move(game_board: list[list[str]]) -> tuple[int, int]:
     """Random choice for bot from game board."""
+    row: int = -1
+    col: int = -1
+    while game_board[row][col] != "O":
+        row, col = randint(0, len(game_board)), randint(0, len(game_board[0]))
+    return row, col
 
 
 def normal_bot_move():
