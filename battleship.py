@@ -31,7 +31,7 @@ type_of_field = {
 
 
 def get_user_coords() -> str:
-    user_coords = input("Wprowadź współrzędne statku: / Enter ship coordinates: \n")
+    user_coords = input("Enter ship coordinates: \n")
     return user_coords
 
 def get_ship_direction() -> str:
@@ -131,3 +131,7 @@ def attempt_feedback(hit_miss_sunk: str) -> None: #ja
 
 def get_winner(game_board: list[str]) -> None: #ja
     pass
+
+def display_message() -> None:
+    if validate_coords() == False:
+        print("Invalid input!")
