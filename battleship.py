@@ -107,10 +107,26 @@ def get_user_coords() -> str:
     return user_coords
 
 
-def get_ship_direction() -> str:
-    """Ask user for ship placement plane."""
-    return ""
+def get_ship_direction():
+    """Ask user for ship placement direction."""
+    ship_directions_dict = {
+        1: "Up",
+        2: "Down",
+        3: "Left",
+        4: "Right"}
 
+	while True:
+		ship_direction = int(input(
+			"""choose ship's direction:
+			1.Up
+			2.Down
+			3.Left
+			4.Right
+			Enter number of Your choice:"""))
+		if ship_direction not in ship_directions_dict:
+				print("\nwrong number, please try again\n")
+				continue
+			return (ship_directions_dict[ship_direction])
 
 def get_ship_type() -> str:
     """Ask user which ship type to place on board."""
@@ -130,11 +146,7 @@ def get_ship_type() -> str:
 
 def validate_coords() -> bool:
     """Check if input coordinates are within board bounds."""
-    def validate_coords(valid_coordinates: list[str], user_coords: str) -> bool:
-    if user_coords in valid_coordinates:
-        return True
-    else:
-        return False
+    return False
 
 
 def normalize_coords(raw_coords: str) -> str:
@@ -196,12 +208,26 @@ def check_ship_proximity(player_board: list[list[str]],
     return False
 
 
-def waiting_screen(wait_message: str) -> None:
-    """Display message during placement phase when switching players."""
-    print(wait_message)
-# input1 = input("Press any key")
-# if input1:
-#     game_continue()
+def waiting_screen():
+	"""Display message during placement phase when switching players."""
+    print("""\n
+    \n
+    \n
+    \n
+ _       __        _  __     ____               __  __                       __                    
+| |     / /____ _ (_)/ /_   / __/____   _____   \ \/ /____   __  __ _____   / /_ __  __ _____ ______ 
+| | /| / // __ `// // __/  / /_ / __ \ / ___/    \  // __ \ / / / // ___/  / __// / / // ___// __  /
+| |/ |/ // /_/ // // /_   / __// /_/ // /        / // /_/ // /_/ // /     / /_ / /_/ // /   / / / /
+|__/|__/ \__,_//_/ \__/  /_/   \____//_/        /_/ \____/ \__,_//_/      \__/ \__,_//_/   /_/ /_/ 
+                                                                                                    \n
+                                                                                                    \n
+                                                                                                    """)
+
+    input1 = input("Press any key to continue:")
+
+    # if input1:
+    #     game_continue()
+    # pass
 
 
 def clear_terminal() -> None:
