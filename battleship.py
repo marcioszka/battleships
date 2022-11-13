@@ -107,35 +107,26 @@ def get_user_coords() -> str:
     return ""
 
 
-def get_ship_direction() -> str:
-    """Ask user for ship placement plane."""
-    return ""
+def get_ship_direction():
+    """Ask user for ship placement direction."""
+    ship_directions_dict = {
+        1: "Up",
+        2: "Down",
+        3: "Left",
+        4: "Right"}
 
-
-def get_ship_type() -> str:
-    """Ask user which ship type to place on board."""
-    ship_type: str = ""
-    while ship_type not in Constants.SHIP_TYPES:
-        print("Ship types:")
-        for name in Constants.SHIP_TYPES:
-            print(f"{'':<Constants.TEXT_INDENT} {name}")
-        try:
-            ship_type = input("\nSelect a type of ship\n")
-            if ship_type not in Constants.SHIP_TYPES:
-                raise ValueError
-        except ValueError:
-            print("\nUnknown ship type.\n")
-    return ship_type
-
-
-def validate_coords() -> bool:
-    """Check if input coordinates are within board bounds."""
-    return False
-
-
-def normalize_coords(raw_coords: str) -> str:
-    """Convert user input into a format used in coordinates translation."""
-    return raw_coords
+    while True:
+        ship_direction = int(input(
+            """choose ship's direction:
+    1.Up
+    2.Down
+    3.Left
+    4.Right
+    Enter number of Your choice:"""))
+        if ship_direction not in ship_directions_dict:
+            print("\nwrong number, please try again\n")
+            continue
+        return (ship_directions_dict[ship_direction])
 
 
 def translate_coords(raw_coords: str) -> tuple[int, int]:
@@ -187,12 +178,26 @@ def check_ship_proximity(player_board: list[list[str]],
     return False
 
 
-def waiting_screen(wait_message: str) -> None:
-    """Display message during placement phase when switching players."""
-    print(wait_message)
-# input1 = input("Press any key")
-# if input1:
-#     game_continue()
+def waiting_screen():
+	"""Display message during placement phase when switching players."""
+    print("""\n
+    \n
+    \n
+    \n
+ _       __        _  __     ____               __  __                       __                    
+| |     / /____ _ (_)/ /_   / __/____   _____   \ \/ /____   __  __ _____   / /_ __  __ _____ ______ 
+| | /| / // __ `// // __/  / /_ / __ \ / ___/    \  // __ \ / / / // ___/  / __// / / // ___// __  /
+| |/ |/ // /_/ // // /_   / __// /_/ // /        / // /_/ // /_/ // /     / /_ / /_/ // /   / / / /
+|__/|__/ \__,_//_/ \__/  /_/   \____//_/        /_/ \____/ \__,_//_/      \__/ \__,_//_/   /_/ /_/ 
+                                                                                                    \n
+                                                                                                    \n
+                                                                                                    """)
+
+    input1 = input("Press any key to continue:")
+
+    # if input1:
+    #     game_continue()
+    # pass
 
 
 def clear_terminal() -> None:
