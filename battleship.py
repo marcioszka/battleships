@@ -44,7 +44,12 @@ class Constants:  # pylint: disable=[too-few-public-methods]
 #               ["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "0"]]
-
+#    row = player_board[3]
+    # col = player_board[3][2]
+    # if "X" in player_board[row-1][col]
+    # if "X" in player_board[row][col-1]
+    # if "X" in player_board[row+1][col]
+    # if "X" in player_board[row][col+1]
 
 def generate_board_size(selected_size: int) -> None:
     """Populate game constants with size adjusted values."""
@@ -108,7 +113,6 @@ def get_user_coords(phase: str) -> str:
     user_coords = input("Enter ship coordinates: \n")
     if phase == "placement":
         validate_placement(user_coords)
-
     return user_coords
 
 
@@ -244,8 +248,6 @@ def check_ship_proximity(player_board: list[list[str]],  # Function has a bug
         return True
     return False
 
-<<<<<<< HEAD
-=======
 
 def ship_coords(coords, orientation, ship):  # fix variable names
     """Convert ship into a list of coordinates."""
@@ -278,7 +280,6 @@ def ship_coords(coords, orientation, ship):  # fix variable names
     # if "X" in player_board[row+1][col]
     # if "X" in player_board[row][col+1]
 
->>>>>>> f17ea02878696f8d76c91ef9ce935310c8ae3bd7
 
 def waiting_screen():
     print("""\n
