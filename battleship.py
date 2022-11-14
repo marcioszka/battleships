@@ -108,9 +108,12 @@ def remove_ship():
     """Remove placed ship from player board."""
 
 
-def get_user_coords() -> str:
+def get_user_coords(phase: str) -> str:
     """Ask user for coordinates."""
     user_coords = input("Enter ship coordinates: \n")
+    if phase == "placement":
+        validate_placement(user_coords)
+
     return user_coords
 
 
@@ -157,11 +160,18 @@ def normalize_coords(raw_coords: str) -> str:
     return raw_coords
 
 
+# def translate_coords(raw_coords: str) -> tuple[int, int]:
+#     """Convert user input into a format used in the game."""
+#     converted: list[int] = [
+#         int(Constants.COORDS_TRANSLATION[raw_coords[0]]),
+#         int(raw_coords[1::]) - 1]
+#     return converted[0], converted[1]
+
 def translate_coords(raw_coords: str) -> tuple[int, int]:
     """Convert user input into a format used in the game."""
     converted: list[int] = [
-        int(Constants.COORDS_TRANSLATION[raw_coords[0]]),
-        int(raw_coords[1::]) - 1]
+        int(int(raw_coords[1::]) - 1),
+        int(Constants.COORDS_TRANSLATION[raw_coords[0]])]
     return converted[0], converted[1]
 
 
@@ -175,7 +185,12 @@ def check_for_valid_move(defender_visible_board: list[list[str]],
 
 def get_empty_board(board_size: int) -> list[list[str]]:
     """Create new playable board."""
-    return [["O"]*board_size]*board_size
+    board: list[list[str]] = []
+    for row in range(board_size):
+        board.append([])
+        for _ in range(board_size):
+            board[row].append("O")
+    return board
 
 
 def display_board(game_board: list[str]) -> None:
@@ -201,24 +216,62 @@ def convert_board(board: list[list[str]]) -> str:
     return ""
 
 
-def check_ship_proximity(player_board: list[list[str]],
+def check_ship_proximity(player_board: list[list[str]],  # Function has a bug
                          converted_coords: tuple[int, int],
                          ship_type: list[str],
                          ship_direction: str) -> bool:
     """Check if ship placement attempt has enough space."""
-    player_board = player_board.copy()
-    print(converted_coords)
-    ship_type = ship_type.copy()
-    print(ship_direction)
+    coords_list = ship_coords(converted_coords, ship_direction, ship_type)
+    confirm_list = []
+    for element in coords_list:
+        if player_board[element[0]][element[1]] == "O":
+            if player_board[element[0]-1][element[1]] in ["O", None]:
+                if player_board[element[0]+1][element[1]] in ["O", None]:
+                    if player_board[element[0]][element[1]+1] in ["O", None]:
+                        if player_board[element[0]][element[1]-1] in ["O",
+                                                                      None]:
+                            confirm_list.append(True)
+                        else:
+                            confirm_list.append(False)
+                    else:
+                        confirm_list.append(False)
+                else:
+                    confirm_list.append(False)
+            else:
+                confirm_list.append(False)
+        else:
+            confirm_list.append(False)
+    if all(confirm_list) is True:
+        return True
     return False
+
+
+def ship_coords(coords, orientation, ship):  # fix variable names
+    """Convert ship into a list of coordinates."""
+    temp_ship = []
+    working_coords = coords
+    for _ in ship:
+        temp_ship.append(working_coords)
+        if orientation == "down":
+            working_coords = working_coords[0]+1, working_coords[1]
+        if orientation == "right":
+            working_coords = working_coords[0], working_coords[1]+1
+        if orientation == "up":
+            working_coords = working_coords[0]-1, working_coords[1]
+        if orientation == "left":
+            working_coords = working_coords[0], working_coords[1]-1
+    return temp_ship
+
 
 # game_board = [["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "Y"],
 #               ["0", "0", "0", "0", "Y"],
 #               ["0", "0", "X", "X", "X"],
 #               ["0", "0", "0", "0", "0"]]
+# {(0,0), (0,1), (0,2), (0,3), (0,4), (1,0), (1,1), (1,2), (1,3)}
     # row = player_board[3]
     # col = player_board[3][2]
+    # if "X" in player_board[row][col]
     # if "X" in player_board[row-1][col]
     # if "X" in player_board[row][col-1]
     # if "X" in player_board[row+1][col]
