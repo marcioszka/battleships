@@ -8,7 +8,7 @@ from time import sleep
 
 
 class Globals:  # pylint: disable=[too-few-public-methods]
-    """Globally accessed constants."""
+    """Globally accessed variables."""
 
     SHIP_TYPES: dict[str, list[str]] = {
         "carrier": ["X", "X", "X", "X", "X"],
@@ -208,11 +208,14 @@ def get_empty_board(board_size: int) -> list[list[str]]:
     return board
 
 
-def display_board(game_board: list[str], selected_size: int) -> None:
+def edd(game_board: list[list[str]]) -> None:
     """Display board to the user."""
-    print(f'{""}\t{"A"}\t{"B"}\t{"C"}\t{"D"}\t{"E"}')
+    print(" ", end="\t")
+    for key in Globals.COORDS_TRANSLATION:
+        print(key, end="\t")
+    print("\n")
     for id_position, position in enumerate(game_board, start=1):
-        print(id_position, *position, sep='\t')
+        print(f"{str(id_position):>2}", *position, sep='\t')
 
 
 def display_turns_left(turn_counter: int) -> None:
