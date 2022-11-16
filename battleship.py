@@ -208,7 +208,7 @@ def get_empty_board(board_size: int) -> list[list[str]]:
     return board
 
 
-def edd(game_board: list[list[str]]) -> None:
+def display_board(game_board: list[list[str]]) -> None:
     """Display board to the user."""
     print(" ", end="\t")
     for key in Globals.COORDS_TRANSLATION:
