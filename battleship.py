@@ -59,7 +59,7 @@ def get_game_mode() -> int:
     print("Available modes:")
     while selected_mode not in Constants.GAME_MODES:
         for key, value in Constants.GAME_MODES.items():
-            print(f"{'':<Constants.TEXT_INDENT}{key}: {value}")
+            print(f"{' ':<Constants.TEXT_INDENT}{key}: {value}")
         try:
             selected_mode = int(input("\nSelect game mode.\n"))
             if selected_mode < 1 or selected_mode > len(Constants.GAME_MODES):
@@ -72,7 +72,14 @@ def get_game_mode() -> int:
 
 def get_turn_limit() -> int:
     """Ask user to specify game length."""
-    return 69  # Nice
+    turn_limit = 0
+    while turn_limit not in range(5, 51):
+        try:
+            turn_limit = int(
+                input("Select maximum number of turns from 5 - 50:\n"))
+        except ValueError:
+            print("Invalid input, type in a number 5 - 50\n")
+    return turn_limit
 
 
 def get_board_size() -> int:
@@ -101,27 +108,42 @@ def remove_ship():
     """Remove placed ship from player board."""
 
 
-def get_user_coords(phase: str) -> str:
+def get_user_coords(player_board: list[list[str]],
+                    phase: str, board_size: int) -> tuple[int, int]:
     """Ask user for coordinates."""
-    user_coords = input("Enter ship coordinates: \n")
-    if phase == "placement":
-        validate_placement(user_coords)
-    return user_coords
+    user_coords: str = ""
+    translated: tuple[int, int] = (-1, -1)
+    while (translated == (-1, -1)
+           or player_board[translated[0]][translated[1]] != "O"):
+        if phase == "placement":
+            user_coords = input("Enter ship's frontal coordinates.\n")
+        elif phase == "shooting":
+            user_coords = input("Enter coordinates to fire cannons at.\n")
+        normalized = normalize_coords(user_coords)
+        if validate_coords(normalized, board_size, player_board) is True:
+            translated = translate_coords(normalized)
+            user_coords = normalized
+        else:
+            print("Invalid coordinates or already used.")
+            continue
+    return translated
 
 
 def get_ship_direction():
     """Ask user for ship direction placement."""
     ship_direction = 0
-    while ship_direction not in range(1, 5):
-        ship_direction = int(input(
-            """choose ship's direction:
-    1.Up
-    2.Down
-    3.Left
-    4.Right
-    Enter number of Your choice:"""))
-        if ship_direction not in Constants.SHIP_DIRECTION:
-            print("\nwrong number, please try again\n")
+    while ship_direction not in Constants.SHIP_DIRECTION:
+        print("Choose ship's direction\n")
+        for key, value in Constants.SHIP_DIRECTION.items():
+            print(f"{' ':<Constants.TEXT_INDENT}{key}: {value}")
+        try:
+            ship_direction = int(input("Enter number of your choice.\n"))
+            if ship_direction not in Constants.SHIP_DIRECTION:
+                raise ValueError
+        except ValueError:
+            print(
+                f"""Please input a number from\
+                    1 - {len(Constants.SHIP_DIRECTION)}""")
             continue
         return Constants.SHIP_DIRECTION[ship_direction]
 
@@ -132,9 +154,9 @@ def get_ship_type() -> str:
     while ship_type not in Constants.SHIP_TYPES:
         print("Ship types:")
         for name in Constants.SHIP_TYPES:
-            print(f"{'':<Constants.TEXT_INDENT} {name}")
+            print(f"{' ':<Constants.TEXT_INDENT} {name}")
         try:
-            ship_type = input("\nSelect a type of ship\n")
+            ship_type = input("\nSelect a type of ship.\n").lower()
             if ship_type not in Constants.SHIP_TYPES:
                 raise ValueError
         except ValueError:
@@ -142,30 +164,30 @@ def get_ship_type() -> str:
     return ship_type
 
 
-def validate_coords(user_coords: str) -> bool:
-    """Check if input coordinates are within board bounds."""
-    return user_coords in Constants.VALID_COORDINATES
+def validate_coords(user_coords: str, board_size: int,
+                    board: list[list[str]]) -> bool:
+    """Check if input coordinates are within board bounds and weren't taken."""
+    check_coords: tuple[int, int] = translate_coords(user_coords)
+    if check_coords[0] in range(board_size):
+        if check_coords[1] in range(board_size):
+            if board[check_coords[0]][check_coords[1]] == "O":
+                return True
+    return False
 
 
 def normalize_coords(raw_coords: str) -> str:
     """Convert user input into a format used in coordinates translation."""
-    return raw_coords
+    move_list: list[str] = [*raw_coords]
+    move_list[0] = move_list[0].upper()
+    normalized_move = ''.join(move_list)
+    return normalized_move
 
 
 def translate_coords(raw_coords: str) -> tuple[int, int]:
     """Convert user input into a format used in the game."""
-    converted: list[int] = [
-        int(int(raw_coords[1::]) - 1),
-        int(Constants.COORDS_TRANSLATION[raw_coords[0]])]
+    converted: list[int] = [int(int(raw_coords[1::]) - 1),
+                            int(Constants.COORDS_TRANSLATION[raw_coords[0]])]
     return converted[0], converted[1]
-
-
-def check_for_valid_move(defender_visible_board: list[list[str]],
-                         converted_coords: tuple[int, int]) -> bool:
-    """Check if user defined coordinates are a valid move."""
-    row, column = converted_coords[0], converted_coords[1]
-    return (defender_visible_board[row][column]
-            in ["O", "X"])
 
 
 def get_empty_board(board_size: int) -> list[list[str]]:
