@@ -43,9 +43,19 @@ class Globals:  # pylint: disable=[too-few-public-methods]
         6: "Singleplayer against normal PC with turn limit"
     }
     TEXT_INDENT: int = 4
+    # pylint: disable=[line-too-long]
+    WAITING_MESSAGE = [
+        " _       __        _  __     ____               __  __                       __",
+        "| |     / /____ _ (_)/ /_   / __/____   _____   \\ \\/ /____   __  __ _____   / /_ __  __ _____ ______",
+        "| | /| / // __ `// // __/  / /_ / __ \\ / ___/    \\  // __ \\ / / / // ___/  / __// / / // ___// __  /",
+        "| |/ |/ // /_/ // // /_   / __// /_/ // /        / // /_/ // /_/ // /     / /_ / /_/ // /   / / / /",
+        "|__/|__/ \\__,_//_/ \\__/  /_/   \\____//_/        /_/ \\____/ \\__,_//_/      \\__/ \\__,_//_/   /_/ /_/"
+
+    ]
+    # pylint: enable=line-too-long
 
 
-# game_board = [["0", "0", "0", "0", "0"],
+# game_board = [["0", "0", "0", "0", "0"],                                                         sdfsadf
 #               ["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "0"],
 #               ["0", "0", "0", "0", "0"],
@@ -231,7 +241,7 @@ def display_turns_left(turn_counter: int) -> None:
 
 def check_ship_proximity(player_board: list[list[str]],
                          converted_coords: tuple[int, int],
-                         ship_type: list[str],
+                         ship_type: str,
                          ship_direction: str) -> bool:
     """Check if ship placement attempt has enough space."""
     coords_list: list[tuple[int, int]] = extend_ship(
@@ -286,20 +296,12 @@ def extend_ship(front_position: tuple[int, int],
 
 
 def waiting_screen():
-    print("""\n
-    \n
-    \n
-    \n
- _       __        _  __     ____               __  __                       __                    
-| |     / /____ _ (_)/ /_   / __/____   _____   \ \/ /____   __  __ _____   / /_ __  __ _____ ______ 
-| | /| / // __ `// // __/  / /_ / __ \ / ___/    \  // __ \ / / / // ___/  / __// / / // ___// __  /
-| |/ |/ // /_/ // // /_   / __// /_/ // /        / // /_/ // /_/ // /     / /_ / /_/ // /   / / / /
-|__/|__/ \__,_//_/ \__/  /_/   \____//_/        /_/ \____/ \__,_//_/      \__/ \__,_//_/   /_/ /_/ 
-                                                                                                    \n
-                                                                                                    \n
-                                                                                                    """)
-
-    input1 = input("Press any key to continue:")
+    """Print waiting message for player swap."""
+    print("\n\n\n")
+    for line in Globals.WAITING_MESSAGE:
+        print(line)
+    print("\n\n\n")
+    input("Press any key to continue.")
     # if input1:
     #     game_continue()
     # pass
