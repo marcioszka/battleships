@@ -153,7 +153,7 @@ def get_ship_direction():
                 f"""Please input a number from\
                     1 - {len(Globals.SHIP_DIRECTION)}""")
             continue
-        return (Globals.SHIP_DIRECTION[ship_direction])
+        return Globals.SHIP_DIRECTION[ship_direction]
 
 
 def get_ship_type() -> str:
@@ -220,71 +220,68 @@ def display_board(game_board: list[list[str]]) -> None:
 
 def display_turns_left(turn_counter: int) -> None:
     """Display how many turns are left."""
-    print(turn_counter)
+    print(f"{'':>Globals.TEXT_INDENT}Turns left: {turn_counter}")
 
 
-def convert_board(board: list[list[str]]) -> list[str]:
-    """Convert iterable board into multi line string."""
-    board = board.copy()
-    return [""]
+# def convert_board(board: list[list[str]]) -> list[str]:
+#     """Convert iterable board into multi line string."""
+#     board = board.copy()
+#     return [""]
 
 
-def check_ship_proximity(player_board: list[list[str]],  # Function has a bug
+def check_ship_proximity(player_board: list[list[str]],
                          converted_coords: tuple[int, int],
                          ship_type: list[str],
                          ship_direction: str) -> bool:
     """Check if ship placement attempt has enough space."""
-    coords_list: list[tuple[int, int]] = ship_coords(
+    coords_list: list[tuple[int, int]] = extend_ship(
         converted_coords, ship_direction, ship_type)
     confirm_list: list[bool] = []
-    for coords in coords_list:
+    for coordinate in coords_list:
         position_check: list[bool] = []
-        row, col = coords
+        row, col = coordinate
         position_check.append(player_board[row][col] == "O")
         if row == 0:
             position_check.append(
-                player_board[row][col] in ["O", IndexError])
+                player_board[row][col] == "O")
         else:
             position_check.append(
-                player_board[row-1][col] in ["O", IndexError])
-        if row == len(player_board)-1:
-            position_check.append(
-                player_board[row][col] in ["O", IndexError])
-        else:
-            position_check.append(
-                player_board[row+1][col] in ["O", IndexError])
-        if col == len(player_board[0])-1:
-            position_check.append(
-                player_board[row][col] in ["O", IndexError])
-        else:
-            position_check.append(
-                player_board[row][col+1] in ["O", IndexError])
+                player_board[row-1][col] == "O")
         if col == 0:
             position_check.append(
-                player_board[row][col] in ["O", IndexError])
+                player_board[row][col] == "O")
         else:
             position_check.append(
-                player_board[row][col-1] in ["O", IndexError])
+                player_board[row][col-1] == "O")
+        try:
+            position_check.append(
+                player_board[row+1][col] == "O")
+            position_check.append(
+                player_board[row][col+1] == "O")
+        except IndexError:
+            position_check.append(
+                player_board[row][col] == "O")
         confirm_list.append(all(position_check))
     if all(confirm_list) is True:
         return True
     return False
 
 
-def ship_coords(coords, orientation, ship):  # fix variable names
+def extend_ship(front_position: tuple[int, int],
+                orientation: str, ship: str) -> list[tuple[int, int]]:
     """Convert ship into a list of coordinates."""
     temp_ship = []
-    working_coords = coords
-    for _ in ship:
-        temp_ship.append(working_coords)
+    ship_element = front_position
+    for _ in Globals.SHIP_TYPES[ship]:
+        temp_ship.append(ship_element)
         if orientation == "down":
-            working_coords = working_coords[0]+1, working_coords[1]
+            ship_element = ship_element[0]+1, ship_element[1]
         if orientation == "right":
-            working_coords = working_coords[0], working_coords[1]+1
+            ship_element = ship_element[0], ship_element[1]+1
         if orientation == "up":
-            working_coords = working_coords[0]-1, working_coords[1]
+            ship_element = ship_element[0]-1, ship_element[1]
         if orientation == "left":
-            working_coords = working_coords[0], working_coords[1]-1
+            ship_element = ship_element[0], ship_element[1]-1
     return temp_ship
 
 
