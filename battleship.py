@@ -18,6 +18,12 @@ class Constants:  # pylint: disable=[too-few-public-methods]
         "patrol boat": ["X", "X"],
         "speedboat": ["X"]
     }
+    SHIP_DIRECTION: dict[int, str] = {
+        1: "up",
+        2: "right",
+        3: "down",
+        4: "left"
+    }
     COORDS_TRANSLATION: dict[str, int] = dict(
         zip(ascii_uppercase[:5], range(5)))
     VALID_COORDINATES: list[str] = []
@@ -147,7 +153,7 @@ def get_ship_direction():
                 f"""Please input a number from\
                     1 - {len(Constants.SHIP_DIRECTION)}""")
             continue
-        return (ship_directions_dict[ship_direction])
+        return (Constants.SHIP_DIRECTION[ship_direction])
 
 
 def get_ship_type() -> str:
