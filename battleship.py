@@ -18,11 +18,6 @@ class Constants:  # pylint: disable=[too-few-public-methods]
         "patrol boat": ["X", "X"],
         "speedboat": ["X"]
     }
-    SHIP_DIRECTION = {
-        1: "Up",
-        2: "Down",
-        3: "Left",
-        4: "Right"}
     COORDS_TRANSLATION: dict[str, int] = dict(
         zip(ascii_uppercase[:5], range(5)))
     VALID_COORDINATES: list[str] = []
@@ -42,6 +37,13 @@ class Constants:  # pylint: disable=[too-few-public-methods]
         6: "Singleplayer against normal PC with turn limit"
     }
     TEXT_INDENT: int = 4
+
+
+# game_board = [["0", "0", "0", "0", "0"],
+#               ["0", "0", "0", "0", "0"],
+#               ["0", "0", "0", "0", "0"],
+#               ["0", "0", "0", "0", "0"],
+#               ["0", "0", "0", "0", "0"]]
 
 
 def generate_board_size(selected_size: int) -> None:
@@ -145,7 +147,7 @@ def get_ship_direction():
                 f"""Please input a number from\
                     1 - {len(Constants.SHIP_DIRECTION)}""")
             continue
-        return Constants.SHIP_DIRECTION[ship_direction]
+        return (ship_directions_dict[ship_direction])
 
 
 def get_ship_type() -> str:
@@ -200,7 +202,7 @@ def get_empty_board(board_size: int) -> list[list[str]]:
     return board
 
 
-def display_board(game_board: list[str]) -> None:
+def display_board(game_board: list[str], selected_size: int) -> None:
     """Display board to the user."""
     print(f'{""}\t{"A"}\t{"B"}\t{"C"}\t{"D"}\t{"E"}')
     for id_position, position in enumerate(game_board, start=1):
@@ -278,19 +280,18 @@ def ship_coords(coords, orientation, ship):  # fix variable names
 
 
 def waiting_screen():
-    """Display message while changing players in placement phase."""
     print("""\n
     \n
     \n
-    \n\
- _       __        _  __     ____               __  __                       __
-| |     / /____ _ (_)/ /_   / __/____   _____   \\ \\/ /____   __  __ _____   / /_ __  __ _____ ______
-| | /| / // __ `// // __/  / /_ / __ \\ / ___/    \\  // __ \\ / / / // ___/  / __// / / // ___// __  /
+    \n
+ _       __        _  __     ____               __  __                       __                    
+| |     / /____ _ (_)/ /_   / __/____   _____   \ \/ /____   __  __ _____   / /_ __  __ _____ ______ 
+| | /| / // __ `// // __/  / /_ / __ \ / ___/    \  // __ \ / / / // ___/  / __// / / // ___// __  /
 | |/ |/ // /_/ // // /_   / __// /_/ // /        / // /_/ // /_/ // /     / /_ / /_/ // /   / / / /
-|__/|__/ \\__,_//_/ \\__/  /_/   \\____//_/        /_/ \\____/ \\__,_//_/      \\__/ \\__,_//_/   /_/ /_/
-    \n
-    \n
-    """)
+|__/|__/ \__,_//_/ \__/  /_/   \____//_/        /_/ \____/ \__,_//_/      \__/ \__,_//_/   /_/ /_/ 
+                                                                                                    \n
+                                                                                                    \n
+                                                                                                    """)
 
     input1 = input("Press any key to continue:")
     # if input1:
@@ -381,26 +382,9 @@ def place_move_on_board(defender_visible_board: list[list[str]],
     return hidden_board, visible_board
 
 
-def placement_feedback(player_board: list[list[str]],
-                       converted_coords: tuple[int, int],
-                       ship_type: list[str],
-                       ship_direction: str) -> None:
-    # if validate_coords(converted_coords) is False:
-    #     print("Invalid input!")
-    if check_ship_proximity(player_board, converted_coords,
-                            ship_type, ship_direction) is False:
-        print("Ships are too close!")
-
-
-def move_attempt_feedback(hit_missed_sunk: str,
-                          ) -> None:
+def move_attempt_feedback(hit_miss_sunk: str) -> None:
     """User feedback based on his move attempt."""
-    if hit_missed_sunk == "X":
-        print("You've hit a ship!")
-    elif hit_missed_sunk == "M":
-        print("You've missed!")
-    elif hit_missed_sunk == "S":
-        print("You've sunk a ship!")
+    print(hit_miss_sunk)
 
 
 def check_for_winner(player_board: list[list[str]]) -> tuple[bool, int]:
@@ -449,6 +433,19 @@ def main() -> None:
     """Combine actual game logic."""
 
 
+def attempt_feedback(hit_missed_sunk: str) -> None:
+    if validate_coords() == False:
+        print("Invalid input!")
+    if check_ship_proximity() == False:
+        print("Ships are too close!")
+    if hit_missed_sunk == "X":
+        print("You've hit a ship!")
+    elif hit_missed_sunk == "M":
+        print("You've missed!")
+    elif hit_missed_sunk == "S":
+        print("You've sunk a ship!")
+
+
 if __name__ == "__main__":
     # Testing and execution purpose
 
@@ -462,6 +459,4 @@ if __name__ == "__main__":
     # get_board_size()
     # print(Constants.VALID_COORDINATES)
     # print(Constants.COORDS_TRANSLATION)
-    # print(get_empty_board(10))
-    # waiting_screen()
-    pass
+    print(get_empty_board(10))
