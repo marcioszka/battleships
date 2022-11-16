@@ -7,7 +7,7 @@ from string import ascii_uppercase
 from time import sleep
 
 
-class Constants:  # pylint: disable=[too-few-public-methods]
+class Globals:  # pylint: disable=[too-few-public-methods]
     """Globally accessed constants."""
 
     SHIP_TYPES: dict[str, list[str]] = {
@@ -54,27 +54,27 @@ class Constants:  # pylint: disable=[too-few-public-methods]
 
 def generate_board_size(selected_size: int) -> None:
     """Populate game constants with size adjusted values."""
-    Constants.COORDS_TRANSLATION = dict(
+    Globals.COORDS_TRANSLATION = dict(
         zip(ascii_uppercase[:selected_size], range(selected_size)))
-    Constants.VALID_COORDINATES = [row+str(column) for column in
-                                   range(selected_size)
-                                   for row in Constants.COORDS_TRANSLATION]
+    Globals.VALID_COORDINATES = [row+str(column) for column in
+                                 range(selected_size)
+                                 for row in Globals.COORDS_TRANSLATION]
 
 
 def get_game_mode() -> int:
     """Ask user to select a game mode."""
     selected_mode = 0
     print("Available modes:")
-    while selected_mode not in Constants.GAME_MODES:
-        for key, value in Constants.GAME_MODES.items():
-            print(f"{' ':<Constants.TEXT_INDENT}{key}: {value}")
+    while selected_mode not in Globals.GAME_MODES:
+        for key, value in Globals.GAME_MODES.items():
+            print(f"{' ':<Globals.TEXT_INDENT}{key}: {value}")
         try:
             selected_mode = int(input("\nSelect game mode.\n"))
-            if selected_mode < 1 or selected_mode > len(Constants.GAME_MODES):
+            if selected_mode < 1 or selected_mode > len(Globals.GAME_MODES):
                 raise ValueError
         except ValueError:
             print("\nPlease enter a valid number.\n")
-    print(f"Selected '{Constants.GAME_MODES[selected_mode]}' mode.")
+    print(f"Selected '{Globals.GAME_MODES[selected_mode]}' mode.")
     return selected_mode
 
 
@@ -140,32 +140,32 @@ def get_user_coords(player_board: list[list[str]],
 def get_ship_direction():
     """Ask user for ship direction placement."""
     ship_direction = 0
-    while ship_direction not in Constants.SHIP_DIRECTION:
+    while ship_direction not in Globals.SHIP_DIRECTION:
         print("Choose ship's direction\n")
-        for key, value in Constants.SHIP_DIRECTION.items():
-            print(f"{' ':<Constants.TEXT_INDENT}{key}: {value}")
+        for key, value in Globals.SHIP_DIRECTION.items():
+            print(f"{' ':<Globals.TEXT_INDENT}{key}: {value}")
         try:
             ship_direction = int(input("Enter number of your choice.\n"))
-            if ship_direction not in Constants.SHIP_DIRECTION:
+            if ship_direction not in Globals.SHIP_DIRECTION:
                 raise ValueError
         except ValueError:
             print(
                 f"""Please input a number from\
-                    1 - {len(Constants.SHIP_DIRECTION)}""")
+                    1 - {len(Globals.SHIP_DIRECTION)}""")
             continue
-        return (Constants.SHIP_DIRECTION[ship_direction])
+        return (Globals.SHIP_DIRECTION[ship_direction])
 
 
 def get_ship_type() -> str:
     """Ask user which ship type to place on board."""
     ship_type: str = ""
-    while ship_type not in Constants.SHIP_TYPES:
+    while ship_type not in Globals.SHIP_TYPES:
         print("Ship types:")
-        for name in Constants.SHIP_TYPES:
-            print(f"{' ':<Constants.TEXT_INDENT} {name}")
+        for name in Globals.SHIP_TYPES:
+            print(f"{' ':<Globals.TEXT_INDENT} {name}")
         try:
             ship_type = input("\nSelect a type of ship.\n").lower()
-            if ship_type not in Constants.SHIP_TYPES:
+            if ship_type not in Globals.SHIP_TYPES:
                 raise ValueError
         except ValueError:
             print("\nUnknown ship type.\n")
@@ -194,7 +194,7 @@ def normalize_coords(raw_coords: str) -> str:
 def translate_coords(raw_coords: str) -> tuple[int, int]:
     """Convert user input into a format used in the game."""
     converted: list[int] = [int(int(raw_coords[1::]) - 1),
-                            int(Constants.COORDS_TRANSLATION[raw_coords[0]])]
+                            int(Globals.COORDS_TRANSLATION[raw_coords[0]])]
     return converted[0], converted[1]
 
 
@@ -460,9 +460,9 @@ if __name__ == "__main__":
     # print(COORDS_TRANSLATION)
     # print(translate_coords("J2138"))
     # get_game_mode()
-    # print(Constants.COORDS_TRANSLATION)
-    # print(Constants.VALID_COORDINATES)
+    # print(Globals.COORDS_TRANSLATION)
+    # print(Globals.VALID_COORDINATES)
     # get_board_size()
-    # print(Constants.VALID_COORDINATES)
-    # print(Constants.COORDS_TRANSLATION)
+    # print(Globals.VALID_COORDINATES)
+    # print(Globals.COORDS_TRANSLATION)
     print(get_empty_board(10))
