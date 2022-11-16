@@ -44,13 +44,6 @@ class Constants:  # pylint: disable=[too-few-public-methods]
     TEXT_INDENT: int = 4
 
 
-# game_board = [["0", "0", "0", "0", "0"],
-#               ["0", "0", "0", "0", "0"],
-#               ["0", "0", "0", "0", "0"],
-#               ["0", "0", "0", "0", "0"],
-#               ["0", "0", "0", "0", "0"]]
-
-
 def generate_board_size(selected_size: int) -> None:
     """Populate game constants with size adjusted values."""
     Constants.COORDS_TRANSLATION = dict(
@@ -108,9 +101,11 @@ def remove_ship():
     """Remove placed ship from player board."""
 
 
-def get_user_coords() -> str:
+def get_user_coords(phase: str) -> str:
     """Ask user for coordinates."""
     user_coords = input("Enter ship coordinates: \n")
+    if phase == "placement":
+        validate_placement(user_coords)
     return user_coords
 
 
@@ -160,8 +155,8 @@ def normalize_coords(raw_coords: str) -> str:
 def translate_coords(raw_coords: str) -> tuple[int, int]:
     """Convert user input into a format used in the game."""
     converted: list[int] = [
-        int(Constants.COORDS_TRANSLATION[raw_coords[0]]),
-        int(raw_coords[1::]) - 1]
+        int(int(raw_coords[1::]) - 1),
+        int(Constants.COORDS_TRANSLATION[raw_coords[0]])]
     return converted[0], converted[1]
 
 
@@ -175,19 +170,19 @@ def check_for_valid_move(defender_visible_board: list[list[str]],
 
 def get_empty_board(board_size: int) -> list[list[str]]:
     """Create new playable board."""
-    return [["O"]*board_size]*board_size
+    board: list[list[str]] = []
+    for row in range(board_size):
+        board.append([])
+        for _ in range(board_size):
+            board[row].append("O")
+    return board
 
 
 def display_board(game_board: list[str]) -> None:
     """Display board to the user."""
-    board_size = len(game_board)
-    row = 0
-    column = 0
-    print(f'{"": <0}\t{"1": <0}\t{"2": <0}\t{"3": <0}\t{"4": <0}\t{"5": <0}')
-    while row < board_size:
-        print(
-            f'{row+1: <0}\t{game_board[row][column]: <0}\t{game_board[row][column+1]: <0}\t{game_board[row][column+2]: <0}\t{game_board[row][column+3]: <0}\t{game_board[row][column+4]: <0}')
-        row += 1
+    print(f'{""}\t{"A"}\t{"B"}\t{"C"}\t{"D"}\t{"E"}')
+    for id_position, position in enumerate(game_board, start=1):
+        print(id_position, *position, sep='\t')
 
 
 def display_turns_left(turn_counter: int) -> None:
@@ -195,34 +190,69 @@ def display_turns_left(turn_counter: int) -> None:
     print(turn_counter)
 
 
-def convert_board(board: list[list[str]]) -> str:
+def convert_board(board: list[list[str]]) -> list[str]:
     """Convert iterable board into multi line string."""
     board = board.copy()
-    return ""
+    return [""]
 
 
-def check_ship_proximity(player_board: list[list[str]],
+def check_ship_proximity(player_board: list[list[str]],  # Function has a bug
                          converted_coords: tuple[int, int],
                          ship_type: list[str],
                          ship_direction: str) -> bool:
     """Check if ship placement attempt has enough space."""
-    player_board = player_board.copy()
-    print(converted_coords)
-    ship_type = ship_type.copy()
-    print(ship_direction)
+    coords_list: list[tuple[int, int]] = ship_coords(
+        converted_coords, ship_direction, ship_type)
+    confirm_list: list[bool] = []
+    for coords in coords_list:
+        position_check: list[bool] = []
+        row, col = coords
+        position_check.append(player_board[row][col] == "O")
+        if row == 0:
+            position_check.append(
+                player_board[row][col] in ["O", IndexError])
+        else:
+            position_check.append(
+                player_board[row-1][col] in ["O", IndexError])
+        if row == len(player_board)-1:
+            position_check.append(
+                player_board[row][col] in ["O", IndexError])
+        else:
+            position_check.append(
+                player_board[row+1][col] in ["O", IndexError])
+        if col == len(player_board[0])-1:
+            position_check.append(
+                player_board[row][col] in ["O", IndexError])
+        else:
+            position_check.append(
+                player_board[row][col+1] in ["O", IndexError])
+        if col == 0:
+            position_check.append(
+                player_board[row][col] in ["O", IndexError])
+        else:
+            position_check.append(
+                player_board[row][col-1] in ["O", IndexError])
+        confirm_list.append(all(position_check))
+    if all(confirm_list) is True:
+        return True
     return False
 
-# game_board = [["0", "0", "0", "0", "0"],
-#               ["0", "0", "0", "0", "Y"],
-#               ["0", "0", "0", "0", "Y"],
-#               ["0", "0", "X", "X", "X"],
-#               ["0", "0", "0", "0", "0"]]
-    # row = player_board[3]
-    # col = player_board[3][2]
-    # if "X" in player_board[row-1][col]
-    # if "X" in player_board[row][col-1]
-    # if "X" in player_board[row+1][col]
-    # if "X" in player_board[row][col+1]
+
+def ship_coords(coords, orientation, ship):  # fix variable names
+    """Convert ship into a list of coordinates."""
+    temp_ship = []
+    working_coords = coords
+    for _ in ship:
+        temp_ship.append(working_coords)
+        if orientation == "down":
+            working_coords = working_coords[0]+1, working_coords[1]
+        if orientation == "right":
+            working_coords = working_coords[0], working_coords[1]+1
+        if orientation == "up":
+            working_coords = working_coords[0]-1, working_coords[1]
+        if orientation == "left":
+            working_coords = working_coords[0], working_coords[1]-1
+    return temp_ship
 
 
 def waiting_screen():
@@ -258,10 +288,14 @@ def clear_terminal() -> None:
 
 def boards_side_by_side(player1_visible_board: list[list[str]],
                         player2_visible_board: list[list[str]],
-                        ) -> str:
+                        board_size: int) -> str:
     """Display both players visible board versions side by side."""
-    player1_visible_board = player1_visible_board.copy()
-    player2_visible_board = player2_visible_board.copy()
+    boards = convert_board(player1_visible_board), convert_board(
+        player2_visible_board)
+    for i in range(board_size):
+        print()
+        for j in range(2):
+            print(boards[j][i], end=' ')
     return ""
 
 
@@ -288,6 +322,9 @@ def boards_side_by_side(player1_visible_board: list[list[str]],
 #         # the next die and so on.
 #         print(DICE[die-1][i], end=' ')
 #     print()
+
+# for i in range(board_size):
+#
 
 def whose_turn_is_it(turn_counter: int) -> str:
     """Get player symbol based on turn number."""
