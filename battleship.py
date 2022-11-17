@@ -293,10 +293,6 @@ def extend_ship(front_position: tuple[int, int],
     for _ in Globals.SHIP_TYPES[ship]:
         temp_ship.append(ship_element)
         try:
-            if orientation == "down":
-                ship_element = ship_element[0]+1, ship_element[1]
-            if orientation == "right":
-                ship_element = ship_element[0], ship_element[1]+1
             if orientation == "up":
                 if ship_element[0] == 0:
                     raise IndexError
@@ -305,6 +301,10 @@ def extend_ship(front_position: tuple[int, int],
                 if ship_element[1] == 0:
                     raise IndexError
                 ship_element = ship_element[0], ship_element[1]-1
+            if orientation == "down":
+                ship_element = ship_element[0]+1, ship_element[1]
+            if orientation == "right":
+                ship_element = ship_element[0], ship_element[1]+1
         except IndexError:
             print("Ship out of bounds!")
     return temp_ship
@@ -368,37 +368,67 @@ def check_if_sunk(turn_counter: int, attack_coords: tuple[int, int]) -> bool:
             if attack_coords in coords:
                 hit_ship = ship
     if len(enemy_ships[hit_ship]) < 1:
-        print(f"{whose_turn_is_it(turn_counter)} {hit_ship} has been sunk!")
         return True
     return False
 
 
 def place_move_on_board(defender_visible_board: list[list[str]],
                         turn_counter: int,
-                        attack_coords: tuple[int, int]
-                        ) -> list[list[str]]:
+                        attack_coords: tuple[int, int],
+                        ship_name: str,
+                        ship_direction: str) -> list[list[str]]:
     """Place attack coordinates result on player boards."""
-    row, column = attack_coords
+    row, col = attack_coords
     board = defender_visible_board
+    if board[row][col] == "O":
+        if whose_turn_is_it(turn_counter) == "Player 1":
+            if attack_coords in Globals.PLAYER2_SHIPS.values():
+                board[row][col] = "H"
+                Globals.PLAYER2_SHIPS[ship_name].remove(attack_coords)
+                if Globals.PLAYER1_HITS[ship_name]:
+                    Globals.PLAYER1_HITS[ship_name].append(attack_coords)
+                else:
+                    Globals.PLAYER1_HITS.update({ship_name: [attack_coords]})
+            else:
+                board[row][col] = "M"
+        if whose_turn_is_it(turn_counter) == "Player 2":
+            if attack_coords in Globals.PLAYER1_SHIPS.values():
+                board[row][col] = "H"
+                Globals.PLAYER1_SHIPS[ship_name].remove(attack_coords)
+                if Globals.PLAYER2_HITS[ship_name]:
+                    Globals.PLAYER2_HITS[ship_name].append(attack_coords)
+                else:
+                    Globals.PLAYER2_HITS.update({ship_name: [attack_coords]})
+            else:
+                board[row][col] = "M"
     if check_if_sunk(turn_counter, attack_coords):
+        if whose_turn_is_it(turn_counter) == "Player 1":
+            for ship_element in Globals.PLAYER1_HITS[ship_name]:
+                board[ship_element[0]][ship_element[1]] = "S"
+        if whose_turn_is_it(turn_counter) == "Player 2":
+            for ship_element in Globals.PLAYER2_HITS[ship_name]:
+                board[ship_element[0]][ship_element[1]] = "S"
+        attempt_feedback(turn_counter, attack_coords,
+                         board, ship_name, ship_direction)
+    return board
 
 
-def move_attempt_feedback(hit_miss_sunk: str) -> None:
+def attempt_feedback(turn_counter: int,
+                     attack_coords: tuple[int, int],
+                     player_board: list[list[str]],
+                     ship_name: str,
+                     ship_direction: str
+                     ) -> None:
     """User feedback based on his move attempt."""
-    print(hit_miss_sunk)
-
-
-def attempt_feedback(hit_missed_sunk: str) -> None:
-    if validate_coords() == False:
-        print("Invalid input!")
-    if check_ship_proximity() == False:
+    if check_ship_proximity(player_board, attack_coords,
+                            ship_name, ship_direction) is False:
         print("Ships are too close!")
-    if hit_missed_sunk == "X":
+    if player_board[attack_coords[0]][attack_coords[1]] == "X":
         print("You've hit a ship!")
-    elif hit_missed_sunk == "M":
+    elif player_board[attack_coords[0]][attack_coords[1]] == "M":
         print("You've missed!")
-    elif hit_missed_sunk == "S":
-        print("You've sunk a ship!")
+    elif player_board[attack_coords[0]][attack_coords[1]] == "S":
+        print(f"{whose_turn_is_it(turn_counter)} {ship_name} has been sunk!")
 
 
 def check_for_winner(player_board: list[list[str]]) -> tuple[bool, int]:
