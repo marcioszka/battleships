@@ -324,6 +324,17 @@ def boards_side_by_side(player1_visible_board: list[list[str]],
                         player2_visible_board: list[list[str]],
                         board_size: int) -> None:
     """Display both players visible board versions side by side."""
+    boards = convert_board(player1_visible_board), convert_board(
+        player2_visible_board)
+    print(boards[0][0], end='')
+    print("\t", end='')
+    print(boards[1][0], end='')
+    print("\n")
+    for i in range(1, board_size+1):
+        for j in range(2):
+            print(boards[j][i], end='')
+            print("\t", end='')
+        print()
 
 
 def whose_turn_is_it(turn_counter: int) -> str:
