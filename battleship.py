@@ -55,6 +55,8 @@ class Globals:  # pylint: disable=[too-few-public-methods]
     # pylint: enable=[line-too-long]
     PLAYER1_SHIPS: dict[str, list[tuple[int, int]]] = {}
     PLAYER2_SHIPS: dict[str, list[tuple[int, int]]] = {}
+    PLAYER1_HITS: dict[str, list[tuple[int, int]]] = {}
+    PLAYER2_HITS: dict[str, list[tuple[int, int]]] = {}
 
 
 def generate_board_size(selected_size: int) -> None:
@@ -378,6 +380,7 @@ def place_move_on_board(defender_visible_board: list[list[str]],
     """Place attack coordinates result on player boards."""
     row, column = attack_coords
     board = defender_visible_board
+    if check_if_sunk(turn_counter, attack_coords):
 
 
 def move_attempt_feedback(hit_miss_sunk: str) -> None:
