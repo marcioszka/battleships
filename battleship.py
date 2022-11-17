@@ -483,19 +483,11 @@ def shooting_phase():
 
 def main() -> None:
     """Combine actual game logic."""
+    settings_phase()
+    placement_phase()
+    shooting_phase()
 
 
 if __name__ == "__main__":
     # Testing and execution purpose
-
-    # main()
-    # get_ship_type()
-    # print(COORDS_TRANSLATION)
-    # print(translate_coords("J2138"))
-    # get_game_mode()
-    # print(Globals.COORDS_TRANSLATION)
-    # print(Globals.VALID_COORDINATES)
-    # get_board_size()
-    # print(Globals.VALID_COORDINATES)
-    # print(Globals.COORDS_TRANSLATION)
-    print(get_empty_board(10))
+    main()
