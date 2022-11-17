@@ -53,6 +53,8 @@ class Globals:  # pylint: disable=[too-few-public-methods]
 
     ]
     # pylint: enable=[line-too-long]
+    PLAYER1_SHIPS: dict[str, list[tuple[int, int]]] = {}
+    PLAYER2_SHIPS: dict[str, list[tuple[int, int]]] = {}
 
 
 def generate_board_size(selected_size: int) -> None:
