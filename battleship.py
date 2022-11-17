@@ -384,6 +384,8 @@ def place_move_on_board(defender_visible_board: list[list[str]],
         if whose_turn_is_it(turn_counter) == "Player 1":
             if attack_coords in Globals.PLAYER2_SHIPS.values():
                 board[row][col] = "H"
+                attempt_feedback(turn_counter, attack_coords,
+                                 board, ship_name, ship_direction)
                 Globals.PLAYER2_SHIPS[ship_name].remove(attack_coords)
                 if Globals.PLAYER1_HITS[ship_name]:
                     Globals.PLAYER1_HITS[ship_name].append(attack_coords)
@@ -391,9 +393,13 @@ def place_move_on_board(defender_visible_board: list[list[str]],
                     Globals.PLAYER1_HITS.update({ship_name: [attack_coords]})
             else:
                 board[row][col] = "M"
+                attempt_feedback(turn_counter, attack_coords,
+                                 board, ship_name, ship_direction)
         if whose_turn_is_it(turn_counter) == "Player 2":
             if attack_coords in Globals.PLAYER1_SHIPS.values():
                 board[row][col] = "H"
+                attempt_feedback(turn_counter, attack_coords,
+                                 board, ship_name, ship_direction)
                 Globals.PLAYER1_SHIPS[ship_name].remove(attack_coords)
                 if Globals.PLAYER2_HITS[ship_name]:
                     Globals.PLAYER2_HITS[ship_name].append(attack_coords)
@@ -401,6 +407,8 @@ def place_move_on_board(defender_visible_board: list[list[str]],
                     Globals.PLAYER2_HITS.update({ship_name: [attack_coords]})
             else:
                 board[row][col] = "M"
+                attempt_feedback(turn_counter, attack_coords,
+                                 board, ship_name, ship_direction)
     if check_if_sunk(turn_counter, attack_coords):
         if whose_turn_is_it(turn_counter) == "Player 1":
             for ship_element in Globals.PLAYER1_HITS[ship_name]:
