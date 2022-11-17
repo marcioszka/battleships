@@ -52,14 +52,7 @@ class Globals:  # pylint: disable=[too-few-public-methods]
         "|__/|__/ \\__,_//_/ \\__/  /_/   \\____//_/        /_/ \\____/ \\__,_//_/      \\__/ \\__,_//_/   /_/ /_/"
 
     ]
-    # pylint: enable=line-too-long
-
-
-# game_board = [["0", "0", "0", "0", "0"],                                                         sdfsadf
-#               ["0", "0", "0", "0", "0"],
-#               ["0", "0", "0", "0", "0"],
-#               ["0", "0", "0", "0", "0"],
-#               ["0", "0", "0", "0", "0"]]
+    # pylint: enable=[line-too-long]
 
 
 def generate_board_size(selected_size: int) -> None:
@@ -233,10 +226,21 @@ def display_turns_left(turn_counter: int) -> None:
     print(f"{'':>Globals.TEXT_INDENT}Turns left: {turn_counter}")
 
 
-# def convert_board(board: list[list[str]]) -> list[str]:
-#     """Convert iterable board into multi line string."""
-#     board = board.copy()
-#     return [""]
+def convert_board(board: list[list[str]]) -> list[str]:
+    """Convert iterable board into multi line string."""
+    column_names = []
+    column_names.append("\t")
+    for letter in Globals.COORDS_TRANSLATION:
+        column_names.append((letter + " "))
+    column_names = [''.join(column_names)]
+    board_body = []
+    for id_position, position in enumerate(board, start=1):
+        row = []
+        row.append((str(id_position) + "\t"))
+        row.append((' '.join([*position])))
+        board_body.append(''.join(row))
+    stringified_board = column_names + board_body
+    return stringified_board
 
 
 def check_ship_proximity(player_board: list[list[str]],
@@ -297,14 +301,13 @@ def extend_ship(front_position: tuple[int, int],
 
 def waiting_screen():
     """Print waiting message for player swap."""
+    clear_terminal()
     print("\n\n\n")
     for line in Globals.WAITING_MESSAGE:
         print(line)
     print("\n\n\n")
     input("Press any key to continue.")
-    # if input1:
-    #     game_continue()
-    # pass
+    clear_terminal()
 
 
 def clear_terminal() -> None:
@@ -319,43 +322,9 @@ def clear_terminal() -> None:
 
 def boards_side_by_side(player1_visible_board: list[list[str]],
                         player2_visible_board: list[list[str]],
-                        board_size: int) -> str:
+                        board_size: int) -> None:
     """Display both players visible board versions side by side."""
-    boards = convert_board(player1_visible_board), convert_board(
-        player2_visible_board)
-    for i in range(board_size):
-        print()
-        for j in range(2):
-            print(boards[j][i], end=' ')
-    return ""
 
-
-# DICE = [
-#     ("-----",
-#      "|   |",
-#      "| o |",
-#      "|   |",
-#      "-----",),
-#     ("-----",
-#      "|o  |",
-#      "|   |",
-#      "|  o|",
-#      "-----",),  # etc.
-# ]
-
-
-# rolled_dice = (1, 2)
-
-# for i in range(5):  # 5 is the height of the die.
-#     for die in rolled_dice:
-#         # Now get the corresponding die in the DICE list
-#         # and print its first line, then the first line of
-#         # the next die and so on.
-#         print(DICE[die-1][i], end=' ')
-#     print()
-
-# for i in range(board_size):
-#
 
 def whose_turn_is_it(turn_counter: int) -> str:
     """Get player symbol based on turn number."""
