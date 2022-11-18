@@ -4,7 +4,6 @@ from string import ascii_uppercase
 from random import choice, randint
 from platform import system as operating_system
 from os import system
-from types import NoneType
 
 
 class Globals:  # pylint: disable=[too-few-public-methods]
@@ -505,20 +504,25 @@ def get_winner(player_board: list[list[str]],
     print(turn)
 
 
-def bot_ship_placement():
+def bot_ship_placement(bot_board: list[list[str]]) -> list[list[str]]:
     """Placement phase for bot in singleplayer."""
-    ships_to_place: dict[str, list[str]] = {}
+    ships_to_place: list[str] = []
     for ship in Globals.PLAYER1_SHIPS:
-        ships_to_place.update({ship: []})
-        ship_name = ''.join(letter for letter in ship if not letter.isdigit())
-        ships_to_place[ship] = (Globals.SHIP_TYPES[ship_name])
+        ships_to_place.append(
+            ''.join(letter for letter in ship if not letter.isdigit()))
     while len(ships_to_place) != 0:
         ships: list[str] = []
         for ship in ships_to_place:
             ships.append(ship)
         selected_ship: str = choice(ships)
-
-        ships_to_place.pop(selected_ship)
+        ship_direction: str = choice(Globals.SHIP_DIRECTION)
+        placement_coords: tuple[int, int] = easy_bot_move(bot_board)
+        coords_list: list[tuple[int, int]] = extend_ship(
+            placement_coords, ship_direction, selected_ship)
+        if check_ship_proximity(bot_board, coords_list):
+            place_ship(
+                bot_board, placement_coords, selected_ship, ship_direction, 2)
+    return bot_board
 
 
 def easy_bot_move(game_board: list[list[str]]) -> tuple[int, int]:
