@@ -527,8 +527,8 @@ def bot_ship_placement(bot_board: list[list[str]]) -> list[list[str]]:
 
 def easy_bot_move(game_board: list[list[str]]) -> tuple[int, int]:
     """Random choice for bot from game board."""
-    row: int = -1
-    col: int = -1
+    row: int = randint(0, len(game_board[0]))
+    col: int = randint(0, len(game_board[0]))
     while game_board[row][col] != "O":
         row, col = randint(0, len(game_board)), randint(0, len(game_board[0]))
     return row, col
