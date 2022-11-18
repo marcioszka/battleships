@@ -1,10 +1,10 @@
 """A game of battleships."""
-
-from os import system
-from platform import system as operating_system
-from random import randint
-from string import ascii_uppercase
 from time import sleep
+from string import ascii_uppercase
+from random import choice, randint
+from platform import system as operating_system
+from os import system
+from types import NoneType
 
 
 class Globals:  # pylint: disable=[too-few-public-methods]
@@ -117,6 +117,20 @@ def get_board_size() -> int:
 
 def confirm_placement():
     """Ask user for confirmation of ship placement."""
+    while True:  # "True" jest fe, ale nie wiem jak to inaczej opisać
+        # display_board()? nie wiem jak wyswietlic tablicę z danym statkiem
+        player_decision = input(
+            "Do You accept such ship placement?\nenter:yes/no\n")
+        if player_decision == "yes":
+            print("ship placement was accepted")
+            # return (wyświetlamy tablicę z dodanym statkiem)
+            break
+        elif player_decision == "no":
+            print("ship placement was not accepted")
+            # return (zwracamy oryginalną tablicę)
+            break
+        else:
+            print('''invalid input, please enter "Yes" or "No"''')
 
 
 def remove_ship():
@@ -247,13 +261,52 @@ def convert_board(board: list[list[str]]) -> list[str]:
     return stringified_board
 
 
-def check_ship_proximity(player_board: list[list[str]],
-                         converted_coords: tuple[int, int],
-                         ship_type: str,
-                         ship_direction: str) -> bool:
-    """Check if ship placement attempt has enough space."""
+def place_ship(player_board: list[list[str]],
+               converted_coords: tuple[int, int],
+               ship_type: str,
+               ship_direction: str,
+               which_player: int) -> list[list[str]]:
+    """Placement of selected ship on board"""
     coords_list: list[tuple[int, int]] = extend_ship(
         converted_coords, ship_direction, ship_type)
+    if check_ship_proximity(player_board, coords_list):
+        for row, col in coords_list:
+            player_board[row][col] = "X"
+    if whose_turn_is_it(which_player) == "Player 1":
+        if Globals.PLAYER1_SHIPS[ship_type]:
+            ship_name: str = ship_type
+            counter: int = 1
+            if isinstance(Globals.PLAYER1_SHIPS
+                          .get(str(ship_name + str(counter))), type(list)):
+                new_name: str = str(ship_name + str(counter))
+                while isinstance(Globals.PLAYER1_SHIPS
+                                 .get(str(new_name)), type(list)):
+                    counter += 1
+                    new_name = str(ship_name + str(counter))
+                ship_name = new_name
+            Globals.PLAYER1_SHIPS.update({ship_name: coords_list})
+        Globals.PLAYER1_SHIPS.update({ship_type: coords_list})
+    if whose_turn_is_it(which_player) == "Player 2":
+        if Globals.PLAYER2_SHIPS[ship_type]:
+            ship_name = ship_type
+            counter = 1
+            if isinstance(Globals.PLAYER2_SHIPS
+                          .get(str(ship_name + str(counter))), type(list)):
+                new_name = str(ship_name + str(counter))
+                while isinstance(Globals.PLAYER2_SHIPS
+                                 .get(str(new_name)), type(list)):
+                    counter += 1
+                    new_name = str(ship_name + str(counter))
+                ship_name = new_name
+            Globals.PLAYER2_SHIPS.update({ship_name: coords_list})
+        Globals.PLAYER2_SHIPS.update({ship_type: coords_list})
+    return player_board
+
+
+def check_ship_proximity(player_board: list[list[str]],
+                         coords_list: list[tuple[int, int]]) -> bool:
+    """Check if ship placement attempt has enough space."""
+
     confirm_list: list[bool] = []
     for coordinate in coords_list:
         position_check: list[bool] = []
@@ -454,6 +507,18 @@ def get_winner(player_board: list[list[str]],
 
 def bot_ship_placement():
     """Placement phase for bot in singleplayer."""
+    ships_to_place: dict[str, list[str]] = {}
+    for ship in Globals.PLAYER1_SHIPS:
+        ships_to_place.update({ship: []})
+        ship_name = ''.join(letter for letter in ship if not letter.isdigit())
+        ships_to_place[ship] = (Globals.SHIP_TYPES[ship_name])
+    while len(ships_to_place) != 0:
+        ships: list[str] = []
+        for ship in ships_to_place:
+            ships.append(ship)
+        selected_ship: str = choice(ships)
+
+        ships_to_place.pop(selected_ship)
 
 
 def easy_bot_move(game_board: list[list[str]]) -> tuple[int, int]:
