@@ -714,7 +714,7 @@ def placement_phase(game_mode: int, board_size: int
             print("More options become visible after placing ships.\n")
         if len(ships) > 0:
             print("2. Remove ship\n")
-        if len(ships) > 1 and player == 2:
+        if len(ships) == len(Globals.PLAYER1_SHIPS) and player == 2:
             print("3. Start game\n")
         if len(ships) > 1 and player == 1:
             print("3. Pass placement to 2nd player\n")
@@ -751,8 +751,8 @@ def placement_phase(game_mode: int, board_size: int
             waiting_screen()
             player += 1
         elif (selection == 3 and player == 2
-              and len(ships) == len(Globals.P1_SHIPS_FOR_P2)):
-            end = True
+              and len(ships) == len(Globals.PLAYER1_SHIPS)):
+            break
         selection = 0
     if game_mode in range(3, 7):
         bot_ship_placement(p2_board)
