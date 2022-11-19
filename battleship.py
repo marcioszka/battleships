@@ -442,23 +442,26 @@ def extend_ship(front_position: tuple[int, int],
     """Convert ship into a list of coordinates."""
     temp_ship = []
     ship_element = front_position
-    for _ in Globals.SHIP_TYPES[ship]:
-        temp_ship.append(ship_element)
-        try:
-            if orientation == "up":
-                if ship_element[0] == 0:
-                    raise IndexError
-                ship_element = ship_element[0]-1, ship_element[1]
-            if orientation == "left":
-                if ship_element[1] == 0:
-                    raise IndexError
-                ship_element = ship_element[0], ship_element[1]-1
-            if orientation == "down":
-                ship_element = ship_element[0]+1, ship_element[1]
-            if orientation == "right":
-                ship_element = ship_element[0], ship_element[1]+1
-        except IndexError:
-            temp_ship = []
+    if ship == "speedboat":
+        temp_ship.append(front_position)
+    else:
+        for _ in Globals.SHIP_TYPES[ship]:
+            temp_ship.append(ship_element)
+            try:
+                if orientation == "up":
+                    if ship_element[0] == 0:
+                        raise IndexError
+                    ship_element = ship_element[0]-1, ship_element[1]
+                if orientation == "left":
+                    if ship_element[1] == 0:
+                        raise IndexError
+                    ship_element = ship_element[0], ship_element[1]-1
+                if orientation == "down":
+                    ship_element = ship_element[0]+1, ship_element[1]
+                if orientation == "right":
+                    ship_element = ship_element[0], ship_element[1]+1
+            except IndexError:
+                temp_ship = []
     return temp_ship
 
 
