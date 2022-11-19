@@ -521,11 +521,13 @@ def boards_side_by_side(player1_visible_board: list[list[str]],
     print(boards[0][0], end='')
     print("\t", end='')
     print(boards[1][0], end='')
+    print()
     for i in range(1, board_size+1):
         for j in range(2):
             print(boards[j][i], end='')
             print("\t", end='')
-        print("\n\n")
+        print()
+    print("\n\n")
 
 
 def whose_turn_is_it(turn_counter: int) -> str:
@@ -571,12 +573,12 @@ def place_move_on_board(defender_visible_board: list[list[str]],
                     ship_name = ship
     if board[row][col] == "O":
         if whose_turn_is_it(turn_counter) == "Player 1":
-            if attack_coords in Globals.PLAYER2_SHIPS.values():
+            if attack_coords in Globals.PLAYER2_SHIPS[ship_name]:
                 board[row][col] = "H"
                 attempt_feedback(turn_counter, attack_coords,
                                  board, ship_name)
                 Globals.PLAYER2_SHIPS[ship_name].remove(attack_coords)
-                if Globals.PLAYER1_HITS[ship_name]:
+                if isinstance(Globals.PLAYER1_HITS.get(ship_name), list):
                     Globals.PLAYER1_HITS[ship_name].append(attack_coords)
                 else:
                     Globals.PLAYER1_HITS.update({ship_name: [attack_coords]})
@@ -585,12 +587,12 @@ def place_move_on_board(defender_visible_board: list[list[str]],
                 attempt_feedback(turn_counter, attack_coords,
                                  board, ship_name)
         if whose_turn_is_it(turn_counter) == "Player 2":
-            if attack_coords in Globals.PLAYER1_SHIPS.values():
+            if attack_coords in Globals.PLAYER1_SHIPS[ship_name]:
                 board[row][col] = "H"
                 attempt_feedback(turn_counter, attack_coords,
                                  board, ship_name)
                 Globals.PLAYER1_SHIPS[ship_name].remove(attack_coords)
-                if Globals.PLAYER2_HITS[ship_name]:
+                if isinstance(Globals.PLAYER2_HITS.get(ship_name), list):
                     Globals.PLAYER2_HITS[ship_name].append(attack_coords)
                 else:
                     Globals.PLAYER2_HITS.update({ship_name: [attack_coords]})
@@ -761,8 +763,9 @@ def shooting_phase(game_mode: int, turn_limit: int, board_size: int) -> None:
     """Combine functions for shooting phase."""
     p1_defence_board: list[list[str]] = get_empty_board(board_size)
     p2_defence_board: list[list[str]] = get_empty_board(board_size)
-    turn = 0
+    turn = 1
     active_board: list[list[str]] = []
+    clear_terminal()
     while True:
         if whose_turn_is_it(turn) == "Player 1":
             active_board = p2_defence_board
