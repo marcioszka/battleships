@@ -202,7 +202,7 @@ def get_user_coords(player_board: list[list[str]],
         elif phase == "shooting":
             user_coords = input("Enter coordinates to fire cannons at.\n")
         try:
-            if user_coords[0] not in Globals.COORDS_TRANSLATION:
+            if user_coords[0].upper() not in Globals.COORDS_TRANSLATION:
                 raise ValueError
             if (isinstance(user_coords[0], str)
                     and isinstance(int(user_coords[1]), int)):
@@ -685,8 +685,10 @@ def placement_phase(game_mode: int, board_size: int
             print("More options become visible after placing ships.\n")
         if len(ships) > 0:
             print("2. Remove ship\n")
-        if len(ships) > 1:
+        if len(ships) > 1 and player == 2:
             print("3. Start game\n")
+        if len(ships) > 1 and player == 1:
+            print("3. Pass placement to 2nd player\n")
         while selection < 1 or selection > 3:
             try:
                 selection = int(input("Select option:  "))
