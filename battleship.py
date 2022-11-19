@@ -244,7 +244,6 @@ def get_ship_direction() -> str:
 def get_ship_type(player: int) -> str:
     """Ask user which ship type to place on board."""
     ship_type: str = ""
-    ships_left: dict[str, list[str]] = {}
     names: list[str] = []
     ship_length: list[list[tuple[int, int]]] = []
     index: int = 0
@@ -273,8 +272,6 @@ def get_ship_type(player: int) -> str:
             ship_type = input("\nSelect a type of ship.\n").lower()
             if (player == 1 and ship_type not in Globals.SHIP_TYPES
                     or (player == 2 and ship_type not in names)):
-                raise ValueError
-            if player == 2 and ship_type not in ships_left:
                 raise ValueError
         except ValueError:
             print("\nUnknown ship type.\n")
@@ -364,12 +361,15 @@ def place_ship(player_board: list[list[str]],
     """Placement of selected ship on board"""
     coords_list: list[tuple[int, int]] = extend_ship(
         converted_coords, turn_counter % 2, ship_direction, ship_type)
-    for row, col in coords_list:
-        if (row >= len(player_board) or col >= len(player_board)
-                or row < 0 or col < 0):
-            print("Ship out of bounds!")
-            coords_list = []
-            return player_board
+    if len(coords_list) > 1:
+        for row, col in coords_list:
+            if (row >= len(player_board) or col >= len(player_board)
+                    or row < 0 or col < 0):
+                print("Ship out of bounds!")
+                coords_list = []
+                return player_board
+    else:
+        coords_list = [converted_coords]
     if check_ship_proximity(player_board, coords_list):
         for row, col in coords_list:
             player_board[row][col] = "X"
@@ -731,8 +731,11 @@ def placement_phase(game_mode: int, board_size: int
             display_board(active_board)
             ship_type: str = get_ship_type(player)
             coords: tuple[int, int] = get_user_coords(
-                p1_board, "placement", board_size)
-            direction: str = get_ship_direction()
+                active_board, "placement", board_size)
+            if ship_type == "speedboat":
+                direction: str = "up"
+            else:
+                direction = get_ship_direction()
             if player == 1:
                 p1_board = confirm_placement(
                     p1_board, coords, ship_type, direction, player)
@@ -747,7 +750,8 @@ def placement_phase(game_mode: int, board_size: int
                 break
             waiting_screen()
             player += 1
-        elif selection == 3 and player == 2 and len(ships) > 1:
+        elif (selection == 3 and player == 2
+              and len(ships) == len(Globals.P1_SHIPS_FOR_P2)):
             end = True
         selection = 0
     if game_mode in range(3, 7):
