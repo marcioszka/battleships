@@ -55,6 +55,7 @@ class Globals:  # pylint: disable=[too-few-public-methods]
     ]
     # pylint: enable=[line-too-long]
     PLAYER1_SHIPS: dict[str, list[tuple[int, int]]] = {}
+    P1_SHIPS_FOR_P2: dict[str, list[tuple[int, int]]] = {}
     PLAYER2_SHIPS: dict[str, list[tuple[int, int]]] = {}
     PLAYER1_HITS: dict[str, list[tuple[int, int]]] = {}
     PLAYER2_HITS: dict[str, list[tuple[int, int]]] = {}
@@ -133,7 +134,7 @@ def confirm_placement(player_board: list[list[str]],
     player_ships: dict[str, list[tuple[int, int]]] = {}
     active_board: list[list[str]] = deepcopy(player_board)
     if turn_counter % 2 == 0:
-        player_ships = Globals.PLAYER2_SHIPS
+        player_ships = Globals.P1_SHIPS_FOR_P2
     else:
         player_ships = Globals.PLAYER1_SHIPS
     temp_board = place_ship(player_board, converted_coords,
@@ -149,7 +150,10 @@ def confirm_placement(player_board: list[list[str]],
             return temp_board
         if player_decision == "no":
             print("ship placement was not accepted\n")
-            player_ships.popitem()
+            if turn_counter % 2 == 0:
+                pass
+            else:
+                player_ships.pop(ship_type)
         else:
             print('invalid input, please enter "Yes" or "No"')
     return player_board
@@ -245,14 +249,15 @@ def get_ship_type(player: int) -> str:
     ship_length: list[list[tuple[int, int]]] = []
     index: int = 0
     if player == 2:
-        for ship, coords in Globals.PLAYER1_SHIPS.items():
+        for ship, coords in Globals.P1_SHIPS_FOR_P2.items():
             names.append(ship)
             ship_length.append([])
             for coord in coords:
                 ship_length[index].append(coord)
             index += 1
         index = 0
-    while ship_type not in Globals.SHIP_TYPES:
+    while (player == 1 and ship_type not in Globals.SHIP_TYPES
+           or (player == 2 and ship_type not in names)):
         print("Ship types:")
         if player == 1:
             for name, length in Globals.SHIP_TYPES.items():
@@ -266,16 +271,17 @@ def get_ship_type(player: int) -> str:
             index = 0
         try:
             ship_type = input("\nSelect a type of ship.\n").lower()
-            if player == 1 and ship_type not in Globals.SHIP_TYPES:
+            if (player == 1 and ship_type not in Globals.SHIP_TYPES
+                    or (player == 2 and ship_type not in names)):
                 raise ValueError
             if player == 2 and ship_type not in ships_left:
                 raise ValueError
         except ValueError:
             print("\nUnknown ship type.\n")
-        if player == 2:
-            index = names.index(ship_type)
-            names.pop(index)
-            ship_length.pop(index)
+    if player == 2:
+        index = names.index(ship_type)
+        names.pop(index)
+        ship_length.pop(index)
     return ship_type
 
 
@@ -357,7 +363,7 @@ def place_ship(player_board: list[list[str]],
                turn_counter: int) -> list[list[str]]:
     """Placement of selected ship on board"""
     coords_list: list[tuple[int, int]] = extend_ship(
-        converted_coords, ship_direction, ship_type)
+        converted_coords, turn_counter % 2, ship_direction, ship_type)
     for row, col in coords_list:
         if (row >= len(player_board) or col >= len(player_board)
                 or row < 0 or col < 0):
@@ -378,23 +384,25 @@ def place_ship(player_board: list[list[str]],
                     new_name = str(ship_name + str(counter))
                 ship_name = new_name
                 Globals.PLAYER1_SHIPS.update({ship_name: coords_list})
+                Globals.P1_SHIPS_FOR_P2.update({ship_name: coords_list})
             else:
                 Globals.PLAYER1_SHIPS.update({ship_type: coords_list})
+                Globals.P1_SHIPS_FOR_P2.update({ship_type: coords_list})
         if whose_turn_is_it(turn_counter) == "Player 2":
             if Globals.PLAYER2_SHIPS.get(ship_type) is not None:
                 ship_name = ship_type
                 counter = 1
-                if isinstance(Globals.PLAYER2_SHIPS
-                              .get(ship_name + str(counter)), list):
+                new_name = str(ship_name + str(counter))
+                while isinstance(Globals.PLAYER1_SHIPS
+                                 .get(str(new_name)), list):
+                    counter += 1
                     new_name = str(ship_name + str(counter))
-                    while isinstance(Globals.PLAYER2_SHIPS
-                                     .get(str(new_name)), list):
-                        counter += 1
-                        new_name = str(ship_name + str(counter))
-                    ship_name = new_name
+                ship_name = new_name
                 Globals.PLAYER2_SHIPS.update({ship_name: coords_list})
+                Globals.P1_SHIPS_FOR_P2.pop(ship_name)
             else:
                 Globals.PLAYER2_SHIPS.update({ship_type: coords_list})
+                Globals.P1_SHIPS_FOR_P2.pop(ship_type)
         return player_board
     return player_board
 
@@ -437,15 +445,33 @@ def check_ship_proximity(player_board: list[list[str]],
     return False
 
 
-def extend_ship(front_position: tuple[int, int],
+def extend_ship(front_position: tuple[int, int], player: int,
                 orientation: str, ship: str) -> list[tuple[int, int]]:
     """Convert ship into a list of coordinates."""
     temp_ship = []
     ship_element = front_position
-    if ship == "speedboat":
-        temp_ship.append(front_position)
+    ships2: dict[str, list[tuple[int, int]]] = Globals.P1_SHIPS_FOR_P2
+    ships1: dict[str, list[str]] = Globals.SHIP_TYPES
+    if player == 1:
+        for _ in ships1[ship]:
+            temp_ship.append(ship_element)
+            try:
+                if orientation == "up":
+                    if ship_element[0] == 0:
+                        raise IndexError
+                    ship_element = ship_element[0]-1, ship_element[1]
+                if orientation == "left":
+                    if ship_element[1] == 0:
+                        raise IndexError
+                    ship_element = ship_element[0], ship_element[1]-1
+                if orientation == "down":
+                    ship_element = ship_element[0]+1, ship_element[1]
+                if orientation == "right":
+                    ship_element = ship_element[0], ship_element[1]+1
+            except IndexError:
+                temp_ship = []
     else:
-        for _ in Globals.SHIP_TYPES[ship]:
+        for _ in ships2[ship]:
             temp_ship.append(ship_element)
             try:
                 if orientation == "up":
@@ -631,7 +657,7 @@ def bot_ship_placement(bot_board: list[list[str]]) -> list[list[str]]:
         ship_direction: str = choice(directions)
         placement_coords: tuple[int, int] = easy_bot_move(bot_board)
         coords_list: list[tuple[int, int]] = extend_ship(
-            placement_coords, ship_direction, selected_ship)
+            placement_coords, 2, ship_direction, selected_ship)
         if check_ship_proximity(bot_board, coords_list):
             place_ship(
                 bot_board, placement_coords, selected_ship, ship_direction, 2)
