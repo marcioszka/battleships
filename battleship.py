@@ -194,13 +194,22 @@ def get_user_coords(player_board: list[list[str]],
     """Ask user for coordinates."""
     user_coords: str = ""
     translated: tuple[int, int] = (-1, -1)
+    normalized: str = ""
     while (translated == (-1, -1)
            or player_board[translated[0]][translated[1]] != "O"):
         if phase == "placement":
             user_coords = input("Enter ship's frontal coordinates.\n")
         elif phase == "shooting":
             user_coords = input("Enter coordinates to fire cannons at.\n")
-        normalized = normalize_coords(user_coords)
+        try:
+            if user_coords[0] not in Globals.COORDS_TRANSLATION:
+                raise ValueError
+            if (isinstance(user_coords[0], str)
+                    and isinstance(int(user_coords[1]), int)):
+                normalized = normalize_coords(user_coords)
+        except ValueError:
+            print("Invalid coordinates or already used.")
+            continue
         if validate_coords(normalized, board_size, player_board) is True:
             translated = translate_coords(normalized)
             user_coords = normalized
@@ -285,8 +294,8 @@ def normalize_coords(raw_coords: str) -> str:
     """Convert user input into a format used in coordinates translation."""
     move_list: list[str] = [*raw_coords]
     normalized_move: list[str] = []
-    normalized_move.append(move_list[1].upper())
-    normalized_move.append(move_list[0])
+    normalized_move.append(move_list[0].upper())
+    normalized_move.append(move_list[1])
     normalized = ''.join(normalized_move)
     return normalized
 
