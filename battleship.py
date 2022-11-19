@@ -7,6 +7,8 @@ from platform import system as operating_system
 from os import system
 
 
+# global JAKAS_ZMIENNA = ""
+
 class Globals:  # pylint: disable=[too-few-public-methods]
     """Globally accessed variables."""
 
@@ -282,9 +284,11 @@ def validate_coords(user_coords: str, board_size: int,
 def normalize_coords(raw_coords: str) -> str:
     """Convert user input into a format used in coordinates translation."""
     move_list: list[str] = [*raw_coords]
-    move_list[0] = move_list[0].upper()
-    normalized_move = ''.join(move_list)
-    return normalized_move
+    normalized_move: list[str] = []
+    normalized_move.append(move_list[1].upper())
+    normalized_move.append(move_list[0])
+    normalized = ''.join(normalized_move)
+    return normalized
 
 
 def translate_coords(raw_coords: str) -> tuple[int, int]:
