@@ -1,4 +1,5 @@
 """A game of battleships."""
+from copy import deepcopy
 from time import sleep
 from string import ascii_uppercase
 from random import choice, randint
@@ -38,10 +39,9 @@ class Globals:  # pylint: disable=[too-few-public-methods]
         2: "Multiplayer with turn limit",
         3: "Singleplayer against easy PC",
         4: "Singleplayer against easy PC with turn limit",
-        5: "Singleplayer against normal PC",
-        6: "Singleplayer against normal PC with turn limit"
+        5: "Singleplayer against normal PC (not implemented)",
+        6: "Singleplayer against normal PC with turn limit (not implemented)"
     }
-    TEXT_INDENT: int = 4
     # pylint: disable=[line-too-long]
     WAITING_MESSAGE = [
         " _       __        _  __     ____               __  __                       __",
@@ -73,7 +73,7 @@ def get_game_mode() -> int:
     print("Available modes:")
     while selected_mode not in Globals.GAME_MODES:
         for key, value in Globals.GAME_MODES.items():
-            print(f"{' ':<Globals.TEXT_INDENT}{key}: {value}")
+            print(f"    {key}: {value}")
         try:
             selected_mode = int(input("\nSelect game mode.\n"))
             if selected_mode < 1 or selected_mode > len(Globals.GAME_MODES):
@@ -107,33 +107,84 @@ def get_board_size() -> int:
                 raise ValueError
         except ValueError:
             print("\nPlease enter a valid number.\n")
-    print("Generating board...")
     generate_board_size(selected_size)
-    sleep(1)
-    print(f"Board with size {selected_size} generated.")
+    print("Generating board", end="", flush=True)
+    sleep(0.5)
+    print(".", end="", flush=True)
+    sleep(0.5)
+    print(".", end="", flush=True)
+    sleep(0.5)
+    print(".\n", flush=True)
+    sleep(0.5)
+    print(f"Board with size {selected_size} generated.\n\n")
     return selected_size
 
 
-def confirm_placement():
+def confirm_placement(player_board: list[list[str]],
+                      converted_coords: tuple[int, int],
+                      ship_type: str,
+                      ship_direction: str,
+                      turn_counter: int) -> list[list[str]]:
     """Ask user for confirmation of ship placement."""
-    while True:  # "True" jest fe, ale nie wiem jak to inaczej opisać
-        # display_board()? nie wiem jak wyswietlic tablicę z danym statkiem
+    player_decision: str = ""
+    decisions: list[str] = ["yes", "no"]
+    player_ships: dict[str, list[tuple[int, int]]] = {}
+    active_board: list[list[str]] = deepcopy(player_board)
+    if turn_counter % 2 == 0:
+        player_ships = Globals.PLAYER2_SHIPS
+    else:
+        player_ships = Globals.PLAYER1_SHIPS
+    temp_board = place_ship(player_board, converted_coords,
+                            ship_type, ship_direction, turn_counter)
+    if temp_board == active_board:
+        return player_board
+    while player_decision not in decisions:
+        display_board(temp_board)
         player_decision = input(
             "Do You accept such ship placement?\nenter:yes/no\n")
         if player_decision == "yes":
-            print("ship placement was accepted")
-            # return (wyświetlamy tablicę z dodanym statkiem)
-            break
-        elif player_decision == "no":
-            print("ship placement was not accepted")
-            # return (zwracamy oryginalną tablicę)
-            break
+            print("ship placement was accepted\n")
+            return temp_board
+        if player_decision == "no":
+            print("ship placement was not accepted\n")
+            player_ships.popitem()
         else:
-            print('''invalid input, please enter "Yes" or "No"''')
+            print('invalid input, please enter "Yes" or "No"')
+    return player_board
 
 
-def remove_ship():
+def remove_ship(turn_counter: int,
+                player_board: list[list[str]]) -> list[list[str]]:
     """Remove placed ship from player board."""
+    ships_position: list[list[tuple[int, int]]] = []
+    ships_on_board: list[str] = []
+    if turn_counter % 2 == 0:
+        for ship_name, ship_position in Globals.PLAYER2_SHIPS.items():
+            ships_position.append(ship_position)
+            ships_on_board.append(ship_name)
+    else:
+        for ship_name, ship_position in Globals.PLAYER1_SHIPS.items():
+            ships_position.append(ship_position)
+            ships_on_board.append(ship_name)
+    print("You've placed following ships on your board:")
+    for ship in ships_on_board:
+        i = 1
+        print(f"{i}. {ship:>2} starting at", end="")
+        print(f"{ships_position[ships_on_board.index(ship)][0]}")
+        i += 1
+    ship_to_remove: str = input("Which one would you like to remove?\n")
+    if ship_to_remove not in ships_on_board:
+        return player_board
+    ship_index = ships_on_board.index(ship_to_remove)
+    for row, col in ships_position[ship_index]:
+        player_board[row][col] = 'O'
+    ships_position.pop(ship_index)
+    ships_on_board.pop(ship_index)
+    if turn_counter % 2 == 0:
+        Globals.PLAYER2_SHIPS.pop(ship_to_remove)
+    else:
+        Globals.PLAYER1_SHIPS.pop(ship_to_remove)
+    return player_board
 
 
 def get_user_coords(player_board: list[list[str]],
@@ -157,35 +208,51 @@ def get_user_coords(player_board: list[list[str]],
     return translated
 
 
-def get_ship_direction():
+def get_ship_direction() -> str:
     """Ask user for ship direction placement."""
     ship_direction = 0
     while ship_direction not in Globals.SHIP_DIRECTION:
-        print("Choose ship's direction\n")
+        print("Choose ship's direction")
         for key, value in Globals.SHIP_DIRECTION.items():
-            print(f"{' ':<Globals.TEXT_INDENT}{key}: {value}")
+            print(f"    {key}: {value}")
         try:
             ship_direction = int(input("Enter number of your choice.\n"))
             if ship_direction not in Globals.SHIP_DIRECTION:
                 raise ValueError
         except ValueError:
-            print(
-                f"""Please input a number from\
-                    1 - {len(Globals.SHIP_DIRECTION)}""")
+            print("Please input a number from", end="")
+            print(f"1 - {len(Globals.SHIP_DIRECTION)}")
             continue
-        return Globals.SHIP_DIRECTION[ship_direction]
+    return Globals.SHIP_DIRECTION[ship_direction]
 
 
-def get_ship_type() -> str:
+def get_ship_type(player: int) -> str:
     """Ask user which ship type to place on board."""
     ship_type: str = ""
+    ships_left: dict[str, list[str]] = {}
+    names: list[str] = []
+    ship_length: list[list[tuple[int, int]]] = []
+    index = 0
+    for ship, coords in Globals.PLAYER1_SHIPS.items():
+        names.append(ship)
+        ship_length.append([])
+        for coord in coords:
+            ship_length[index].append(coord)
+        index += 1
     while ship_type not in Globals.SHIP_TYPES:
         print("Ship types:")
-        for name in Globals.SHIP_TYPES:
-            print(f"{' ':<Globals.TEXT_INDENT} {name}")
+        if player == 1:
+            for name, length in Globals.SHIP_TYPES.items():
+                print(f"    {name.capitalize()}", end="")
+                print(f" - size: {len(length)}")
+        else:
+            for name in names:
+                print(f"    {name.capitalize()}", end="")
+                print(f" - size: {len(ship_length[index])}")
         try:
             ship_type = input("\nSelect a type of ship.\n").lower()
-            if ship_type not in Globals.SHIP_TYPES:
+            if (ship_type not in Globals.SHIP_TYPES
+                    or ship_type not in ships_left):
                 raise ValueError
         except ValueError:
             print("\nUnknown ship type.\n")
@@ -230,17 +297,18 @@ def get_empty_board(board_size: int) -> list[list[str]]:
 
 def display_board(game_board: list[list[str]]) -> None:
     """Display board to the user."""
-    print(" ", end="\t")
-    for key in Globals.COORDS_TRANSLATION:
-        print(key, end="\t")
-    print("\n")
-    for id_position, position in enumerate(game_board, start=1):
-        print(f"{str(id_position):>2}", *position, sep='\t')
+    board = convert_board(game_board)
+    print("\n\n")
+    print(board[0])
+    print()
+    for i in range(1, len(game_board)+1):
+        print(board[i])
+    print("\n\n")
 
 
 def display_turns_left(turn_counter: int) -> None:
     """Display how many turns are left."""
-    print(f"{'':>Globals.TEXT_INDENT}Turns left: {turn_counter}")
+    print(f"    Turns left: {turn_counter}")
 
 
 def convert_board(board: list[list[str]]) -> list[str]:
@@ -264,49 +332,58 @@ def place_ship(player_board: list[list[str]],
                converted_coords: tuple[int, int],
                ship_type: str,
                ship_direction: str,
-               which_player: int) -> list[list[str]]:
+               turn_counter: int) -> list[list[str]]:
     """Placement of selected ship on board"""
     coords_list: list[tuple[int, int]] = extend_ship(
         converted_coords, ship_direction, ship_type)
+    for row, col in coords_list:
+        if (row >= len(player_board) or col >= len(player_board)
+                or row < 0 or col < 0):
+            print("Ship out of bounds!")
+            coords_list = []
+            return player_board
     if check_ship_proximity(player_board, coords_list):
         for row, col in coords_list:
             player_board[row][col] = "X"
-    if whose_turn_is_it(which_player) == "Player 1":
-        if Globals.PLAYER1_SHIPS[ship_type]:
-            ship_name: str = ship_type
-            counter: int = 1
-            if isinstance(Globals.PLAYER1_SHIPS
-                          .get(str(ship_name + str(counter))), type(list)):
+        if whose_turn_is_it(turn_counter) == "Player 1":
+            if Globals.PLAYER1_SHIPS.get(ship_type) is not None:
+                ship_name: str = ship_type
+                counter = 1
                 new_name: str = str(ship_name + str(counter))
                 while isinstance(Globals.PLAYER1_SHIPS
-                                 .get(str(new_name)), type(list)):
+                                 .get(str(new_name)), list):
                     counter += 1
                     new_name = str(ship_name + str(counter))
                 ship_name = new_name
-            Globals.PLAYER1_SHIPS.update({ship_name: coords_list})
-        Globals.PLAYER1_SHIPS.update({ship_type: coords_list})
-    if whose_turn_is_it(which_player) == "Player 2":
-        if Globals.PLAYER2_SHIPS[ship_type]:
-            ship_name = ship_type
-            counter = 1
-            if isinstance(Globals.PLAYER2_SHIPS
-                          .get(str(ship_name + str(counter))), type(list)):
-                new_name = str(ship_name + str(counter))
-                while isinstance(Globals.PLAYER2_SHIPS
-                                 .get(str(new_name)), type(list)):
-                    counter += 1
+                Globals.PLAYER1_SHIPS.update({ship_name: coords_list})
+            else:
+                Globals.PLAYER1_SHIPS.update({ship_type: coords_list})
+        if whose_turn_is_it(turn_counter) == "Player 2":
+            if Globals.PLAYER2_SHIPS.get(ship_type) is not None:
+                ship_name = ship_type
+                counter = 1
+                if isinstance(Globals.PLAYER2_SHIPS
+                              .get(ship_name + str(counter)), list):
                     new_name = str(ship_name + str(counter))
-                ship_name = new_name
-            Globals.PLAYER2_SHIPS.update({ship_name: coords_list})
-        Globals.PLAYER2_SHIPS.update({ship_type: coords_list})
+                    while isinstance(Globals.PLAYER2_SHIPS
+                                     .get(str(new_name)), list):
+                        counter += 1
+                        new_name = str(ship_name + str(counter))
+                    ship_name = new_name
+                Globals.PLAYER2_SHIPS.update({ship_name: coords_list})
+            else:
+                Globals.PLAYER2_SHIPS.update({ship_type: coords_list})
+        return player_board
     return player_board
 
 
 def check_ship_proximity(player_board: list[list[str]],
                          coords_list: list[tuple[int, int]]) -> bool:
     """Check if ship placement attempt has enough space."""
-
     confirm_list: list[bool] = []
+    if len(coords_list) < 1:
+        print("Ship out of bounds!")
+        return False
     for coordinate in coords_list:
         position_check: list[bool] = []
         row, col = coordinate
@@ -334,6 +411,7 @@ def check_ship_proximity(player_board: list[list[str]],
         confirm_list.append(all(position_check))
     if all(confirm_list) is True:
         return True
+    print("Ship too close!")
     return False
 
 
@@ -358,7 +436,7 @@ def extend_ship(front_position: tuple[int, int],
             if orientation == "right":
                 ship_element = ship_element[0], ship_element[1]+1
         except IndexError:
-            print("Ship out of bounds!")
+            temp_ship = []
     return temp_ship
 
 
@@ -397,7 +475,7 @@ def boards_side_by_side(player1_visible_board: list[list[str]],
         for j in range(2):
             print(boards[j][i], end='')
             print("\t", end='')
-        print()
+        print("\n\n")
 
 
 def whose_turn_is_it(turn_counter: int) -> str:
@@ -426,18 +504,27 @@ def check_if_sunk(turn_counter: int, attack_coords: tuple[int, int]) -> bool:
 
 def place_move_on_board(defender_visible_board: list[list[str]],
                         turn_counter: int,
-                        attack_coords: tuple[int, int],
-                        ship_name: str,
-                        ship_direction: str) -> list[list[str]]:
+                        attack_coords: tuple[int, int]) -> list[list[str]]:
     """Place attack coordinates result on player boards."""
     row, col = attack_coords
-    board = defender_visible_board
+    board: list[list[str]] = defender_visible_board
+    ship_name: str = ""
+    if turn_counter % 2 == 0:
+        for ship, coords in Globals.PLAYER1_SHIPS.items():
+            for coord in coords:
+                if coord == attack_coords:
+                    ship_name = ship
+    if turn_counter % 2 != 0:
+        for ship, coords in Globals.PLAYER2_SHIPS.items():
+            for coord in coords:
+                if coord == attack_coords:
+                    ship_name = ship
     if board[row][col] == "O":
         if whose_turn_is_it(turn_counter) == "Player 1":
             if attack_coords in Globals.PLAYER2_SHIPS.values():
                 board[row][col] = "H"
                 attempt_feedback(turn_counter, attack_coords,
-                                 board, ship_name, ship_direction)
+                                 board, ship_name)
                 Globals.PLAYER2_SHIPS[ship_name].remove(attack_coords)
                 if Globals.PLAYER1_HITS[ship_name]:
                     Globals.PLAYER1_HITS[ship_name].append(attack_coords)
@@ -446,12 +533,12 @@ def place_move_on_board(defender_visible_board: list[list[str]],
             else:
                 board[row][col] = "M"
                 attempt_feedback(turn_counter, attack_coords,
-                                 board, ship_name, ship_direction)
+                                 board, ship_name)
         if whose_turn_is_it(turn_counter) == "Player 2":
             if attack_coords in Globals.PLAYER1_SHIPS.values():
                 board[row][col] = "H"
                 attempt_feedback(turn_counter, attack_coords,
-                                 board, ship_name, ship_direction)
+                                 board, ship_name)
                 Globals.PLAYER1_SHIPS[ship_name].remove(attack_coords)
                 if Globals.PLAYER2_HITS[ship_name]:
                     Globals.PLAYER2_HITS[ship_name].append(attack_coords)
@@ -460,7 +547,7 @@ def place_move_on_board(defender_visible_board: list[list[str]],
             else:
                 board[row][col] = "M"
                 attempt_feedback(turn_counter, attack_coords,
-                                 board, ship_name, ship_direction)
+                                 board, ship_name)
     if check_if_sunk(turn_counter, attack_coords):
         if whose_turn_is_it(turn_counter) == "Player 1":
             for ship_element in Globals.PLAYER1_HITS[ship_name]:
@@ -469,53 +556,54 @@ def place_move_on_board(defender_visible_board: list[list[str]],
             for ship_element in Globals.PLAYER2_HITS[ship_name]:
                 board[ship_element[0]][ship_element[1]] = "S"
         attempt_feedback(turn_counter, attack_coords,
-                         board, ship_name, ship_direction)
+                         board, ship_name)
     return board
 
 
 def attempt_feedback(turn_counter: int,
                      attack_coords: tuple[int, int],
                      player_board: list[list[str]],
-                     ship_name: str,
-                     ship_direction: str
-                     ) -> None:
+                     ship_name: str) -> None:
     """User feedback based on his move attempt."""
-    if check_ship_proximity(player_board, attack_coords,
-                            ship_name, ship_direction) is False:
-        print("Ships are too close!")
-    if player_board[attack_coords[0]][attack_coords[1]] == "X":
+    row, col = attack_coords
+    if player_board[row][col] == "X":
         print("You've hit a ship!")
-    elif player_board[attack_coords[0]][attack_coords[1]] == "M":
+    elif player_board[row][col] == "M":
         print("You've missed!")
-    elif player_board[attack_coords[0]][attack_coords[1]] == "S":
+    elif player_board[row][col] == "S":
         print(f"{whose_turn_is_it(turn_counter)} {ship_name} has been sunk!")
 
 
-def check_for_winner(player_board: list[list[str]]) -> tuple[bool, int]:
+def check_for_winner(turn_counter: int) -> str:
     """Check if a player won after his last move."""
-    player_board = player_board.copy()
-    return False, 69  # Nice
+    winner = ""
+    if turn_counter % 2 == 0 and len(Globals.PLAYER1_SHIPS) == 0:
+        winner = "Player 2"
+    elif turn_counter % 2 != 0 and len(Globals.PLAYER2_SHIPS) == 0:
+        winner = "Player 1"
+    return winner
 
 
-def get_winner(player_board: list[list[str]],
-               turn: int) -> None:
+def get_winner(winner: str) -> None:
     """Display a message which player won."""
-    player_board = player_board.copy()
-    print(turn)
+    print(f'{winner} has won!\nSuch a smartie!')
 
 
 def bot_ship_placement(bot_board: list[list[str]]) -> list[list[str]]:
     """Placement phase for bot in singleplayer."""
     ships_to_place: list[str] = []
+    directions: list[str] = []
     for ship in Globals.PLAYER1_SHIPS:
         ships_to_place.append(
-            ''.join(letter for letter in ship if not letter.isdigit()))
+            ''.join(letter for letter in ship if letter.isdigit() is False))
+    for direction in Globals.SHIP_DIRECTION.values():
+        directions.append(direction)
     while len(ships_to_place) != 0:
         ships: list[str] = []
         for ship in ships_to_place:
             ships.append(ship)
         selected_ship: str = choice(ships)
-        ship_direction: str = choice(Globals.SHIP_DIRECTION)
+        ship_direction: str = choice(directions)
         placement_coords: tuple[int, int] = easy_bot_move(bot_board)
         coords_list: list[tuple[int, int]] = extend_ship(
             placement_coords, ship_direction, selected_ship)
@@ -527,8 +615,8 @@ def bot_ship_placement(bot_board: list[list[str]]) -> list[list[str]]:
 
 def easy_bot_move(game_board: list[list[str]]) -> tuple[int, int]:
     """Random choice for bot from game board."""
-    row: int = randint(0, len(game_board[0]))
-    col: int = randint(0, len(game_board[0]))
+    row: int = randint(0, len(game_board[0])-1)
+    col: int = randint(0, len(game_board[0])-1)
     while game_board[row][col] != "O":
         row, col = randint(0, len(game_board)), randint(0, len(game_board[0]))
     return row, col
@@ -538,25 +626,111 @@ def normal_bot_move():
     """Bot attempt to sink a ship."""
 
 
-def settings_phase():
+def settings_phase() -> list[int]:
     """Combine functions for mode selection."""
+    game_mode: int = 0
+    turn_limit: int = 0
+    while game_mode == 0:
+        game_mode = get_game_mode()
+        if game_mode in [5, 6]:
+            print("Game mode not implemented, starting as easy PC")
+            game_mode -= 2
+        if game_mode in [2, 4]:
+            turn_limit = get_turn_limit()
+    board_size: int = get_board_size()
+    return [game_mode, turn_limit, board_size]
 
 
-def placement_phase():
+def placement_phase(game_mode: int, board_size: int
+                    ) -> None:
     """Combine functions for placement phase."""
+    p1_board: list[list[str]] = get_empty_board(board_size)
+    p2_board: list[list[str]] = get_empty_board(board_size)
+    active_board: list[list[str]] = []
+    end: bool = False
+    selection: int = 0
+    player: int = 1
+    while end is False or (player == 2 and game_mode not in range(3, 7)):
+        if player == 1:
+            ships: dict[str, list[tuple[int, int]]] = Globals.PLAYER1_SHIPS
+            active_board = p1_board
+        else:
+            ships = Globals.PLAYER2_SHIPS
+            active_board = p2_board
+        print("What would you like to do?\n")
+        print("1. Place ship\n")
+        if len(ships) > 0:
+            print("2. Remove ship\n")
+        if len(ships) > 1:
+            print("3. Start game\n")
+        while selection < 1 or selection > 3:
+            try:
+                selection = int(input("Select a number:  "))
+                if selection < 1 or selection > 3:
+                    raise ValueError
+            except ValueError:
+                print("Invalid option")
+        if selection == 1:
+            display_board(active_board)
+            ship_type: str = get_ship_type(player)
+            coords: tuple[int, int] = get_user_coords(
+                p1_board, "placement", board_size)
+            direction: str = get_ship_direction()
+            if player == 1:
+                p1_board = confirm_placement(
+                    p1_board, coords, ship_type, direction, player)
+            else:
+                p2_board = confirm_placement(
+                    p2_board, coords, ship_type, direction, player)
+        if selection == 2 and len(ships) > 0:
+            remove_ship(player, active_board)
+            clear_terminal()
+        if (selection == 3 and player == 1 and len(ships) > 1):
+            if game_mode in range(3, 7):
+                break
+            waiting_screen()
+            player += 1
+        elif selection == 3 and player == 2 and len(ships) > 1:
+            end = True
+        selection = 0
+    if game_mode in range(3, 7):
+        bot_ship_placement(p2_board)
 
 
-def shooting_phase():
+def shooting_phase(game_mode: int, turn_limit: int, board_size: int) -> None:
     """Combine functions for shooting phase."""
+    p1_defence_board: list[list[str]] = get_empty_board(board_size)
+    p2_defence_board: list[list[str]] = get_empty_board(board_size)
+    turn = 0
+    active_board: list[list[str]] = []
+    while check_for_winner(turn) != "":
+        if whose_turn_is_it(turn) == "Player 1":
+            active_board = p2_defence_board
+        else:
+            active_board = p1_defence_board
+        if game_mode in [2, 4, 6]:
+            print(f"Turns left: {turn_limit - int(turn/2)}\n")
+            if turn == turn_limit * 2:
+                print("No more turns, it's a draw!")
+                return
+        if game_mode in range(3, 7) and whose_turn_is_it(turn) == "Player 2":
+            print(f"It's {whose_turn_is_it(turn)} turn!\n\n")
+            boards_side_by_side(p1_defence_board, p2_defence_board, board_size)
+        if game_mode in [1, 2] or (game_mode in range(3, 7)
+                                   and whose_turn_is_it(turn) == "Player 1"):
+            attack_coords: tuple[int, int] = get_user_coords(
+                active_board, "shooting", board_size)
+            place_move_on_board(active_board, turn, attack_coords)
+        turn += 1
+    get_winner(check_for_winner(turn))
 
 
 def main() -> None:
     """Combine actual game logic."""
-    settings_phase()
-    placement_phase()
-    shooting_phase()
+    game_mode, turn_limit, board_size = settings_phase()
+    placement_phase(game_mode, board_size)
+    shooting_phase(game_mode, turn_limit, board_size)
 
 
 if __name__ == "__main__":
-    # Testing and execution purpose
     main()
