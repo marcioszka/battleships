@@ -521,7 +521,6 @@ def boards_side_by_side(player1_visible_board: list[list[str]],
     print(boards[0][0], end='')
     print("\t", end='')
     print(boards[1][0], end='')
-    print("\n")
     for i in range(1, board_size+1):
         for j in range(2):
             print(boards[j][i], end='')
@@ -764,16 +763,19 @@ def shooting_phase(game_mode: int, turn_limit: int, board_size: int) -> None:
     p2_defence_board: list[list[str]] = get_empty_board(board_size)
     turn = 0
     active_board: list[list[str]] = []
-    while check_for_winner(turn) != "":
+    while True:
         if whose_turn_is_it(turn) == "Player 1":
             active_board = p2_defence_board
+            print(f"It's {whose_turn_is_it(turn)} turn!\n\n")
         else:
             active_board = p1_defence_board
+            print(f"It's {whose_turn_is_it(turn)} turn!\n\n")
         if game_mode in [2, 4, 6]:
             print(f"Turns left: {turn_limit - int(turn/2)}\n")
             if turn == turn_limit * 2:
                 print("No more turns, it's a draw!")
                 return
+        boards_side_by_side(p1_defence_board, p2_defence_board, board_size)
         if game_mode in range(3, 7) and whose_turn_is_it(turn) == "Player 2":
             print(f"It's {whose_turn_is_it(turn)} turn!\n\n")
             boards_side_by_side(p1_defence_board, p2_defence_board, board_size)
@@ -783,7 +785,9 @@ def shooting_phase(game_mode: int, turn_limit: int, board_size: int) -> None:
                 active_board, "shooting", board_size)
             place_move_on_board(active_board, turn, attack_coords)
         turn += 1
-    get_winner(check_for_winner(turn))
+        if len(Globals.PLAYER1_SHIPS) == 0 or len(Globals.PLAYER2_SHIPS) == 0:
+            get_winner(check_for_winner(turn))
+            break
 
 
 def main() -> None:
