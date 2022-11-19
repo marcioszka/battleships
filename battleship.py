@@ -214,6 +214,9 @@ def get_user_coords(player_board: list[list[str]],
         except ValueError:
             print("Invalid coordinates or already used.")
             continue
+        except IndexError:
+            print("Invalid coordinates or already used.")
+            continue
         if validate_coords(normalized, board_size, player_board) is True:
             translated = translate_coords(normalized)
             user_coords = normalized
@@ -535,22 +538,14 @@ def whose_turn_is_it(turn_counter: int) -> str:
     return "Player 2" if turn_counter % 2 == 0 else "Player 1"
 
 
-def check_if_sunk(turn_counter: int, attack_coords: tuple[int, int]) -> bool:
+def check_if_sunk(turn_counter: int, ship_name: str) -> bool:
     """Confirm that a ship has been sunk."""
-    enemy_ships: dict[str, list[tuple[int, int]]] = {}
-    hit_ship: str = ""
-    if whose_turn_is_it(turn_counter) == "Player 1":
-        enemy_ships = Globals.PLAYER2_SHIPS
-        for ship, coords in enemy_ships.items():
-            if attack_coords in coords:
-                hit_ship = ship
-    if whose_turn_is_it(turn_counter) == "Player 2":
-        enemy_ships = Globals.PLAYER1_SHIPS
-        for ship, coords in enemy_ships.items():
-            if attack_coords in coords:
-                hit_ship = ship
-    if len(enemy_ships[hit_ship]) < 1:
-        return True
+    if turn_counter % 2 == 1:
+        if len(Globals.PLAYER2_SHIPS[ship_name]) < 1:
+            return True
+    if turn_counter % 2 == 0:
+        if len(Globals.PLAYER1_SHIPS[ship_name]) < 1:
+            return True
     return False
 
 
@@ -573,42 +568,49 @@ def place_move_on_board(defender_visible_board: list[list[str]],
                     ship_name = ship
     if board[row][col] == "O":
         if whose_turn_is_it(turn_counter) == "Player 1":
-            if attack_coords in Globals.PLAYER2_SHIPS[ship_name]:
-                board[row][col] = "H"
-                attempt_feedback(turn_counter, attack_coords,
-                                 board, ship_name)
-                Globals.PLAYER2_SHIPS[ship_name].remove(attack_coords)
-                if isinstance(Globals.PLAYER1_HITS.get(ship_name), list):
-                    Globals.PLAYER1_HITS[ship_name].append(attack_coords)
-                else:
-                    Globals.PLAYER1_HITS.update({ship_name: [attack_coords]})
+            if ship_name != "":
+                if attack_coords in Globals.PLAYER2_SHIPS[ship_name]:
+                    board[row][col] = "H"
+                    attempt_feedback(turn_counter, attack_coords,
+                                     board, ship_name)
+                    Globals.PLAYER2_SHIPS[ship_name].remove(attack_coords)
+                    if isinstance(Globals.PLAYER1_HITS.get(ship_name), list):
+                        Globals.PLAYER1_HITS[ship_name].append(attack_coords)
+                    else:
+                        Globals.PLAYER1_HITS.update(
+                            {ship_name: [attack_coords]})
             else:
                 board[row][col] = "M"
                 attempt_feedback(turn_counter, attack_coords,
                                  board, ship_name)
         if whose_turn_is_it(turn_counter) == "Player 2":
-            if attack_coords in Globals.PLAYER1_SHIPS[ship_name]:
-                board[row][col] = "H"
-                attempt_feedback(turn_counter, attack_coords,
-                                 board, ship_name)
-                Globals.PLAYER1_SHIPS[ship_name].remove(attack_coords)
-                if isinstance(Globals.PLAYER2_HITS.get(ship_name), list):
-                    Globals.PLAYER2_HITS[ship_name].append(attack_coords)
-                else:
-                    Globals.PLAYER2_HITS.update({ship_name: [attack_coords]})
+            if ship_name != "":
+                if attack_coords in Globals.PLAYER1_SHIPS[ship_name]:
+                    board[row][col] = "H"
+                    attempt_feedback(turn_counter, attack_coords,
+                                     board, ship_name)
+                    Globals.PLAYER1_SHIPS[ship_name].remove(attack_coords)
+                    if isinstance(Globals.PLAYER2_HITS.get(ship_name), list):
+                        Globals.PLAYER2_HITS[ship_name].append(attack_coords)
+                    else:
+                        Globals.PLAYER2_HITS.update(
+                            {ship_name: [attack_coords]})
             else:
                 board[row][col] = "M"
                 attempt_feedback(turn_counter, attack_coords,
                                  board, ship_name)
-    if check_if_sunk(turn_counter, attack_coords):
-        if whose_turn_is_it(turn_counter) == "Player 1":
-            for ship_element in Globals.PLAYER1_HITS[ship_name]:
-                board[ship_element[0]][ship_element[1]] = "S"
-        if whose_turn_is_it(turn_counter) == "Player 2":
-            for ship_element in Globals.PLAYER2_HITS[ship_name]:
-                board[ship_element[0]][ship_element[1]] = "S"
-        attempt_feedback(turn_counter, attack_coords,
-                         board, ship_name)
+    if ship_name != "":
+        if check_if_sunk(turn_counter, ship_name):
+            if whose_turn_is_it(turn_counter) == "Player 1":
+                for ship_element in Globals.PLAYER1_HITS[ship_name]:
+                    board[ship_element[0]][ship_element[1]] = "S"
+                Globals.PLAYER2_SHIPS.pop(ship_name)
+            if whose_turn_is_it(turn_counter) == "Player 2":
+                for ship_element in Globals.PLAYER2_HITS[ship_name]:
+                    board[ship_element[0]][ship_element[1]] = "S"
+                Globals.PLAYER1_SHIPS.pop(ship_name)
+            attempt_feedback(turn_counter-1, attack_coords,
+                             board, ship_name)
     return board
 
 
@@ -618,7 +620,7 @@ def attempt_feedback(turn_counter: int,
                      ship_name: str) -> None:
     """User feedback based on his move attempt."""
     row, col = attack_coords
-    if player_board[row][col] == "X":
+    if player_board[row][col] == "H":
         print("You've hit a ship!")
     elif player_board[row][col] == "M":
         print("You've missed!")
@@ -769,10 +771,10 @@ def shooting_phase(game_mode: int, turn_limit: int, board_size: int) -> None:
     while True:
         if whose_turn_is_it(turn) == "Player 1":
             active_board = p2_defence_board
-            print(f"It's {whose_turn_is_it(turn)} turn!\n\n")
+            print(f"\n\nIt's {whose_turn_is_it(turn)} turn!\n")
         else:
             active_board = p1_defence_board
-            print(f"It's {whose_turn_is_it(turn)} turn!\n\n")
+            print(f"\n\nIt's {whose_turn_is_it(turn)} turn!\n")
         if game_mode in [2, 4, 6]:
             print(f"Turns left: {turn_limit - int(turn/2)}\n")
             if turn == turn_limit * 2:
@@ -789,7 +791,8 @@ def shooting_phase(game_mode: int, turn_limit: int, board_size: int) -> None:
             place_move_on_board(active_board, turn, attack_coords)
         turn += 1
         if len(Globals.PLAYER1_SHIPS) == 0 or len(Globals.PLAYER2_SHIPS) == 0:
-            get_winner(check_for_winner(turn))
+            boards_side_by_side(p1_defence_board, p2_defence_board, board_size)
+            get_winner(check_for_winner(turn-1))
             break
 
 
@@ -802,3 +805,12 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    # Globals.PLAYER1_SHIPS.update(
+    #     {"carrier": [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]})
+    # Globals.PLAYER1_SHIPS.update(
+    #     {"speedboat": [(0, 4)]})
+    # Globals.PLAYER2_SHIPS.update(
+    #     {"carrier": [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]})
+    # Globals.PLAYER2_SHIPS.update(
+    #     {"speedboat": [(0, 4)]})
+    # shooting_phase(1, 0, 5)
