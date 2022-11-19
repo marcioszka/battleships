@@ -232,13 +232,15 @@ def get_ship_type(player: int) -> str:
     ships_left: dict[str, list[str]] = {}
     names: list[str] = []
     ship_length: list[list[tuple[int, int]]] = []
-    index = 0
-    for ship, coords in Globals.PLAYER1_SHIPS.items():
-        names.append(ship)
-        ship_length.append([])
-        for coord in coords:
-            ship_length[index].append(coord)
-        index += 1
+    index: int = 0
+    if player == 2:
+        for ship, coords in Globals.PLAYER1_SHIPS.items():
+            names.append(ship)
+            ship_length.append([])
+            for coord in coords:
+                ship_length[index].append(coord)
+            index += 1
+        index = 0
     while ship_type not in Globals.SHIP_TYPES:
         print("Ship types:")
         if player == 1:
@@ -249,13 +251,20 @@ def get_ship_type(player: int) -> str:
             for name in names:
                 print(f"    {name.capitalize()}", end="")
                 print(f" - size: {len(ship_length[index])}")
+                index += 1
+            index = 0
         try:
             ship_type = input("\nSelect a type of ship.\n").lower()
-            if (ship_type not in Globals.SHIP_TYPES
-                    or ship_type not in ships_left):
+            if player == 1 and ship_type not in Globals.SHIP_TYPES:
+                raise ValueError
+            if player == 2 and ship_type not in ships_left:
                 raise ValueError
         except ValueError:
             print("\nUnknown ship type.\n")
+        if player == 2:
+            index = names.index(ship_type)
+            names.pop(index)
+            ship_length.pop(index)
     return ship_type
 
 
@@ -657,20 +666,24 @@ def placement_phase(game_mode: int, board_size: int
         else:
             ships = Globals.PLAYER2_SHIPS
             active_board = p2_board
-        print("What would you like to do?\n")
+        print("Select an option index from the list below.\n")
         print("1. Place ship\n")
+        if len(ships) == 0:
+            print("More options become visible after placing ships.\n")
         if len(ships) > 0:
             print("2. Remove ship\n")
         if len(ships) > 1:
             print("3. Start game\n")
         while selection < 1 or selection > 3:
             try:
-                selection = int(input("Select a number:  "))
+                selection = int(input("Select option:  "))
                 if selection < 1 or selection > 3:
                     raise ValueError
             except ValueError:
                 print("Invalid option")
-        if selection == 1:
+        if (selection == 1 or (selection == 1 and player == 2
+                               and Globals.PLAYER2_SHIPS
+                               != Globals.PLAYER1_SHIPS)):
             display_board(active_board)
             ship_type: str = get_ship_type(player)
             coords: tuple[int, int] = get_user_coords(
